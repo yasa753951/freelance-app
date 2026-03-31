@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="接案管理"/>
+<meta name="theme-color" content="#1a1a1a"/>
+<link rel="manifest" href="manifest.json"/>
+<title>接案管理</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f3;
+  --bg3: #eeede9;
+  --text: #1a1a1a;
+  --text2: #666660;
+  --text3: #aaa9a3;
+  --border: rgba(0,0,0,0.1);
+  --border2: rgba(0,0,0,0.18);
+  --radius: 10px;
+  --radius-lg: 14px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+    --bg2: #252525;
+    --bg3: #2e2e2e;
+    --text: #f0efe9;
+    --text2: #999890;
+    --text3: #666560;
+    --border: rgba(255,255,255,0.1);
+    --border2: rgba(255,255,255,0.18);
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overflow:hidden;}
+
+/* layout */
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+.topbar{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.topbar h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 0 calc(64px + var(--safe-bottom));}
+.view{display:none;padding:14px 16px;}
+.view.active{display:block;}
+
+/* bottom nav */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border);display:flex;padding-bottom:var(--safe-bottom);z-index:50;}
+.nav-btn{flex:1;padding:8px 4px 10px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;font-family:inherit;transition:color 0.15s;}
+.nav-btn.active{color:var(--text);}
+.nav-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
+.nav-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+
+/* cards */
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+.card:active{background:var(--bg2);}
+.card-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;}
+.card-sub{font-size:13px;color:var(--text2);margin-bottom:8px;}
+.card-row{display:flex;align-items:center;justify-content:space-between;}
+.tag{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
+.tag-brand{background:#EEEDFE;color:#3C3489;}
+.tag-pkg{background:#E1F5EE;color:#085041;}
+.tag-web{background:#E6F1FB;color:#0C447C;}
+.tag-other{background:#F1EFE8;color:#444441;}
+.card-amount{font-size:13px;color:var(--text2);}
+.card-date{font-size:12px;color:var(--text3);margin-top:5px;}
+.card-date.overdue{color:#c0392b;font-weight:600;}
+.card.overdue{border-left:2.5px solid #e74c3c;}
+
+/* section header */
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:18px;}
+.sec-head:first-child{margin-top:0;}
+.sec-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
+.sec-count{font-size:11px;color:var(--text3);background:var(--bg3);padding:1px 8px;border-radius:20px;}
+
+/* add fab */
+.fab{position:fixed;right:18px;bottom:calc(72px + var(--safe-bottom));width:50px;height:50px;border-radius:50%;background:var(--text);color:var(--bg);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.2);z-index:40;transition:transform 0.1s;}
+.fab:active{transform:scale(0.93);}
+
+/* status pills */
+.pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;white-space:nowrap;}
+.s-quote{background:#F1EFE8;color:#444441;}
+.s-wip{background:#FAEEDA;color:#633806;}
+.s-invoiced{background:#EEEDFE;color:#3C3489;}
+.s-paid{background:#E1F5EE;color:#085041;}
+
+/* stat row */
+.stat-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.stat-card{background:var(--bg2);border-radius:var(--radius);padding:12px 14px;}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:3px;}
+.stat-val{font-size:20px;font-weight:600;color:var(--text);}
+.stat-val.green{color:#0a7c5c;}
+.stat-val.purple{color:#4a3db0;}
+.stat-val.amber{color:#8a5200;}
+
+/* finance table */
+.ftable-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px;}
+.ftable{width:100%;border-collapse:collapse;font-size:13px;min-width:400px;}
+.ftable th{text-align:left;font-weight:500;color:var(--text2);font-size:11px;padding:6px 8px;border-bottom:0.5px solid var(--border);}
+.ftable td{padding:9px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle;}
+.ftable tr:last-child td{border-bottom:none;}
+
+/* tax box */
+.tax-box{background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:16px;}
+.tax-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.tax-field{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.tax-field label{font-size:12px;color:var(--text2);width:60px;flex-shrink:0;}
+.tax-field input,.tax-field select{flex:1;background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit;}
+.tax-result{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.tax-item{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 10px;}
+.tax-item-label{font-size:11px;color:var(--text2);margin-bottom:2px;}
+.tax-item-val{font-size:15px;font-weight:600;color:var(--text);}
+
+/* todo */
+.todo-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
+.todo-item:last-child{border-bottom:none;}
+.todo-check{width:18px;height:18px;border:1.5px solid var(--border2);border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;}
+.todo-check.done{background:#1D9E75;border-color:#1D9E75;}
+.todo-check.done::after{content:'';display:block;width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px);}
+.todo-text{flex:1;font-size:14px;color:var(--text);line-height:1.4;}
+.todo-text.done{text-decoration:line-through;color:var(--text3);}
+.todo-due{font-size:11px;color:var(--text3);margin-top:2px;}
+.todo-due.overdue{color:#c0392b;font-weight:600;}
+.todo-del{font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0 2px;align-self:center;}
+
+/* clients */
+.client-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;}
+.client-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;}
+.av-purple{background:#EEEDFE;color:#3C3489;}
+.av-teal{background:#E1F5EE;color:#085041;}
+.av-amber{background:#FAEEDA;color:#633806;}
+.av-coral{background:#FAECE7;color:#712B13;}
+.client-name{font-size:15px;font-weight:600;color:var(--text);}
+.client-type{font-size:12px;color:var(--text2);}
+.client-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:3px;}
+.client-row span:last-child{color:var(--text);font-weight:500;}
+
+/* CALENDAR */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-nav{display:flex;align-items:center;gap:12px;}
+.cal-nav button{background:none;border:0.5px solid var(--border2);border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--text);font-size:16px;display:flex;align-items:center;justify-content:center;}
+.cal-month{font-size:16px;font-weight:600;color:var(--text);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:14px;}
+.cal-dow{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;}
+.cal-day{min-height:56px;border-radius:8px;padding:4px 4px 3px;background:var(--bg2);cursor:pointer;transition:background 0.1s;position:relative;}
+.cal-day:active{background:var(--bg3);}
+.cal-day.today .cal-daynum{background:var(--text);color:var(--bg);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px;}
+.cal-day.other-month .cal-daynum{color:var(--text3);}
+.cal-daynum{font-size:12px;font-weight:500;color:var(--text);text-align:center;margin-bottom:2px;line-height:22px;}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;padding:0 2px;}
+.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.dot-deadline{background:#888;}
+.dot-payment{background:#1D9E75;}
+.dot-proposal{background:#7F77DD;}
+.dot-invoice{background:#378ADD;}
+.dot-revision{background:#BA7517;}
+.dot-todo{background:#E24B4A;}
+
+/* event list below calendar */
+.cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:14px;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.events-list{display:flex;flex-direction:column;gap:8px;}
+.event-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--radius);border-left:3px solid transparent;}
+.event-item.ev-deadline{border-left-color:#888;}
+.event-item.ev-payment{border-left-color:#1D9E75;}
+.event-item.ev-proposal{border-left-color:#7F77DD;}
+.event-item.ev-invoice{border-left-color:#378ADD;}
+.event-item.ev-revision{border-left-color:#BA7517;}
+.event-item.ev-todo{border-left-color:#E24B4A;}
+.event-date{font-size:12px;color:var(--text2);min-width:36px;}
+.event-info{flex:1;}
+.event-title{font-size:13px;font-weight:500;color:var(--text);}
+.event-sub{font-size:12px;color:var(--text2);}
+.ev-month-title{font-size:13px;font-weight:600;color:var(--text2);margin:14px 0 6px;}
+
+/* modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center;}
+.overlay.open{display:flex;}
+.sheet{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:18px 18px calc(20px + var(--safe-bottom));animation:slideUp 0.25s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.sheet-handle{width:36px;height:4px;background:var(--bg3);border-radius:2px;margin:0 auto 16px;}
+.sheet-title{font-size:17px;font-weight:600;margin-bottom:16px;}
+.form-field{margin-bottom:12px;}
+.form-field label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500;}
+.form-field input,.form-field select,.form-field textarea{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;-webkit-appearance:none;}
+.form-field textarea{min-height:72px;resize:vertical;line-height:1.5;}
+.form-section{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;padding-top:12px;border-top:0.5px solid var(--border);}
+.btn-row{display:flex;gap:10px;margin-top:18px;}
+.btn{flex:1;padding:13px;border-radius:11px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:opacity 0.15s;}
+.btn:active{opacity:0.7;}
+.btn-cancel{background:var(--bg2);color:var(--text);}
+.btn-save{background:var(--text);color:var(--bg);}
+.btn-danger{background:#fff0ef;color:#c0392b;}
+.note-entry{background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
+.note-ts{font-size:11px;color:var(--text3);margin-bottom:2px;}
+.note-text{font-size:13px;color:var(--text);}
+.export-btn{background:none;border:0.5px solid var(--border2);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;}
+
+/* input add row */
+.input-add-row{display:flex;gap:8px;padding:14px 0 0;border-top:0.5px solid var(--border);margin-top:4px;}
+.input-add-row input,.input-add-row select{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;min-width:0;}
+.input-add-row button{background:var(--text);color:var(--bg);border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <h1>接案管理</h1>
+    <div class="topbar-right">
+      <button class="export-btn" onclick="exportCSV()">匯出 CSV</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <!-- KANBAN -->
+    <div class="view active" id="v-kanban">
+      <div id="kanban-list"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="view" id="v-calendar">
+      <div class="cal-header">
+        <div class="cal-nav">
+          <button onclick="calPrev()">&#8249;</button>
+          <span class="cal-month" id="cal-month-label"></span>
+          <button onclick="calNext()">&#8250;</button>
+        </div>
+        <button style="background:none;border:0.5px solid var(--border2);border-radius:8px;padding:4px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;" onclick="calGoToday()">今天</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#888;"></div>截止日</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div>收款</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7F77DD;"></div>提案</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div>發票</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>調整期限</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;"></div>待辦</div>
+      </div>
+      <div id="cal-selected-events"></div>
+      <div class="ev-month-title">本月所有節點</div>
+      <div id="cal-month-events"></div>
+    </div>
+
+    <!-- TODO -->
+    <div class="view" id="v-todo">
+      <div id="todo-list"></div>
+      <div class="input-add-row">
+        <input type="text" id="new-todo" placeholder="新增待辦..." />
+        <select id="todo-project"></select>
+        <input type="date" id="todo-due" style="width:130px;flex:none;" />
+        <button onclick="addTodo()">+</button>
+      </div>
+    </div>
+
+    <!-- FINANCE -->
+    <div class="view" id="v-finance">
+      <div class="tax-box">
+        <div class="tax-title">稅率換算</div>
+        <div class="tax-field"><label>含稅金額</label><input type="number" id="tax-inc" placeholder="輸入含稅金額" oninput="calcFromInc()"/></div>
+        <div class="tax-field"><label>未稅金額</label><input type="number" id="tax-exc" placeholder="輸入未稅金額" oninput="calcFromExc()"/></div>
+        <div class="tax-field"><label>稅率</label>
+          <select id="tax-rate" onchange="recalcTax()">
+            <option value="5">5%（營業稅）</option>
+            <option value="10">10%</option>
+            <option value="20">20%（二代健保）</option>
+          </select>
+        </div>
+        <div class="tax-result">
+          <div class="tax-item"><div class="tax-item-label">未稅</div><div class="tax-item-val" id="r-exc">—</div></div>
+          <div class="tax-item"><div class="tax-item-label">稅額</div><div class="tax-item-val" id="r-tax">—</div></div>
+          <div class="tax-item"><div class="tax-item-label">含稅</div><div class="tax-item-val" id="r-inc">—</div></div>
+        </div>
+      </div>
+      <div class="stat-row" id="stat-row"></div>
+      <div class="ftable-wrap">
+        <table class="ftable">
+          <thead><tr><th>案件</th><th>客戶</th><th>金額</th><th>截止</th><th>狀態</th></tr></thead>
+          <tbody id="finance-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div class="view" id="v-clients">
+      <div id="client-list"></div>
+    </div>
+  </div>
+
+  <!-- bottom nav -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="switchTab('kanban',0)" id="nb-0">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>
+      看板
+    </button>
+    <button class="nav-btn" onclick="switchTab('calendar',1)" id="nb-1">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
+      月曆
+    </button>
+    <button class="nav-btn" onclick="switchTab('todo',2)" id="nb-2">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+      待辦
+    </button>
+    <button class="nav-btn" onclick="switchTab('finance',3)" id="nb-3">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+      收款
+    </button>
+    <button class="nav-btn" onclick="switchTab('clients',4)" id="nb-4">
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+      客戶
+    </button>
+  </nav>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab-btn" onclick="openAdd()">+</button>
+
+<!-- Project Sheet -->
+<div class="overlay" id="sheet-project">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheet-project-title">新增案件</div>
+    <div class="form-field"><label>案件名稱</label><input type="text" id="m-pname" placeholder="例：品牌識別設計"/></div>
+    <div class="form-field"><label>客戶</label><select id="m-pclient"></select></div>
+    <div class="form-field"><label>類型</label>
+      <select id="m-ptype">
+        <option value="brand">品牌設計</option><option value="pkg">包裝設計</option>
+        <option value="web">網頁設計</option><option value="other">其他</option>
+      </select>
+    </div>
+    <div class="form-field"><label>報價 (TWD)</label><input type="number" id="m-pamount" placeholder="0"/></div>
+    <div class="form-field"><label>收款狀態</label>
+      <select id="m-pstatus">
+        <option value="詢價">詢價</option><option value="進行中">進行中</option>
+        <option value="待審稿">待審稿</option><option value="已開發票">已開發票</option>
+        <option value="已收款">已收款</option>
+      </select>
+    </div>
+    <div class="form-section">節點日期</div>
+    <div class="form-field"><label>截止日期</label><input type="date" id="m-pdue"/></div>
+    <div class="form-field"><label>提案日</label><input type="date" id="m-pproposal"/></div>
+    <div class="form-field"><label>設計調整期限</label><input type="date" id="m-prevision"/></div>
+    <div class="form-field"><label>開立發票日</label><input type="date" id="m-pinvoice"/></div>
+    <div class="form-field"><label>收頭款日</label><input type="date" id="m-pdeposit"/></div>
+    <div class="form-field"><label>收尾款日</label><input type="date" id="m-pfinal"/></div>
+    <div class="form-field"><label>收款日（已收款）</label><input type="date" id="m-ppaiddate"/></div>
+    <div class="form-section">備註</div>
+    <div class="form-field"><textarea id="m-pnote" placeholder="新增備註..."></textarea></div>
+    <div id="notes-log-wrap" style="display:none;">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">修改紀錄</div>
+      <div id="notes-log"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeSheet('sheet-project')">取消</button>
+      <button class="btn btn-save" id="sheet-project-save" onclick="saveProject()">新增</button>
+    </div>
+    <div id="delete-project-wrap" style="display:none;margin-top:10px;">
+      <button class="btn btn-danger" style="width:100%;" onclick="deleteProject()">刪除此案件</button>
+    </div>
+  </div>
+</div>
+
+<!-- Client Sheet -->
+<div class="overlay" id="sheet-client">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">新增客戶</div>
+    <div class="form-field"><label>客戶名稱</label><input type="text" id="m-cname" placeholder="公司或個人名稱"/></div>
+    <div class="form-field"><label>產業類型</label><input type="text" id="m-ctype" placeholder="例：食品、科技..."/></div>
+    <div class="form-field"><label>聯絡方式</label><input type="text" id="m-ccontact" placeholder="Email / Line"/></div>
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeSheet('sheet-client')">取消</button>
+      <button class="btn btn-save" onclick="saveClient()">新增</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const K={p:'fpm3_projects',t:'fpm3_todos',c:'fpm3_clients'};
+function load(k){try{return JSON.parse(localStorage.getItem(k))||null;}catch(e){return null;}}
+function persist(){localStorage.setItem(K.p,JSON.stringify(projects));localStorage.setItem(K.t,JSON.stringify(todos));localStorage.setItem(K.c,JSON.stringify(clients));}
+
+const TAG_MAP={brand:'tag-brand',pkg:'tag-pkg',web:'tag-web',other:'tag-other'};
+const TAG_LABEL={brand:'品牌設計',pkg:'包裝設計',web:'網頁設計',other:'其他'};
+const STATUSES=['詢價','進行中','待審稿','已開發票','已收款'];
+const PILL_MAP={'已收款':'s-paid','已開發票':'s-invoiced','進行中':'s-wip','待審稿':'s-wip','詢價':'s-quote'};
+const AVCOLORS=['av-purple','av-teal','av-amber','av-coral'];
+
+let projects=load(K.p)||[
+  {id:1,name:'品牌識別設計',client:'好食光',type:'brand',amount:45000,status:'進行中',due:'2026-04-10',proposal:'2026-04-03',revision:'2026-04-08',invoice:'',deposit:'2026-03-28',final:'',paidDate:'',notes:[]},
+  {id:2,name:'茶飲包裝設計',client:'茶茶茶',type:'pkg',amount:28000,status:'待審稿',due:'2026-03-31',proposal:'',revision:'2026-03-29',invoice:'2026-04-05',deposit:'',final:'',paidDate:'',notes:[]},
+  {id:3,name:'官網視覺設計',client:'新創A',type:'web',amount:60000,status:'詢價',due:'2026-05-01',proposal:'2026-04-15',revision:'',invoice:'',deposit:'',final:'',paidDate:'',notes:[]},
+  {id:4,name:'年報設計',client:'好食光',type:'other',amount:35000,status:'已收款',due:'2026-02-28',proposal:'',revision:'',invoice:'2026-03-01',deposit:'',final:'2026-03-05',paidDate:'2026-03-05',notes:[]},
+];
+let todos=load(K.t)||[
+  {id:1,text:'準備好食光提案簡報',project:'品牌識別設計',due:'2026-04-02',done:false},
+  {id:2,text:'茶茶茶包裝修改第三版',project:'茶飲包裝設計',due:'2026-03-28',done:false},
+  {id:3,text:'寄報價單給新創A',project:'官網視覺設計',due:'',done:true},
+];
+let clients=load(K.c)||[
+  {id:1,name:'好食光',type:'食品飲料',contact:'ming@haoshiguang.tw'},
+  {id:2,name:'茶茶茶',type:'茶飲品牌',contact:'Line: chachachai'},
+  {id:3,name:'新創A',type:'科技新創',contact:'hello@startupa.com'},
+];
+let nextId={p:Math.max(...projects.map(x=>x.id),0)+1,t:Math.max(...todos.map(x=>x.id),0)+1,c:Math.max(...clients.map(x=>x.id),0)+1};
+let editingProjectId=null;
+let currentTab='kanban';
+
+const todayStr=new Date().toISOString().split('T')[0];
+function isOverdue(d){return d&&d<todayStr;}
+
+// ── TABS ──────────────────────────────────────────────
+function switchTab(t,idx){
+  currentTab=t;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('v-'+t).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
+  const fab=document.getElementById('fab-btn');
+  fab.style.display=(t==='finance')?'none':'flex';
+  if(t==='kanban')renderKanban();
+  if(t==='calendar')renderCalendar();
+  if(t==='todo')renderTodo();
+  if(t==='finance')renderFinance();
+  if(t==='clients')renderClients();
+}
+
+function openAdd(){
+  if(currentTab==='clients')openAddClient();
+  else openAddProject();
+}
+
+// ── KANBAN ───────────────────────────────────────────
+function renderKanban(){
+  const list=document.getElementById('kanban-list');
+  list.innerHTML='';
+  STATUSES.forEach(status=>{
+    const items=projects.filter(p=>p.status===status);
+    if(items.length===0&&status==='詢價'){}
+    const sec=document.createElement('div');
+    sec.innerHTML=`<div class="sec-head"><span class="sec-title">${status}</span><span class="sec-count">${items.length}</span></div>`;
+    items.forEach(p=>{
+      const od=isOverdue(p.due)&&status!=='已收款';
+      const d=document.createElement('div');
+      d.className='card'+(od?' overdue':'');
+      d.innerHTML=`<div class="card-name">${p.name}</div><div class="card-sub">${p.client}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]}">${TAG_LABEL[p.type]}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}`;
+      d.onclick=()=>openEditProject(p.id);
+      sec.appendChild(d);
+    });
+    const addBtn=document.createElement('button');
+    addBtn.style.cssText='width:100%;padding:9px;border:0.5px dashed var(--border2);border-radius:var(--radius);background:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:6px;';
+    addBtn.textContent='+ 新增案件';
+    addBtn.onclick=()=>openAddProject(status);
+    sec.appendChild(addBtn);
+    list.appendChild(sec);
+  });
+}
+
+// ── CALENDAR ─────────────────────────────────────────
+let calYear=new Date().getFullYear();
+let calMonth=new Date().getMonth();
+let calSelectedDay=null;
+
+function getCalEvents(){
+  const evs=[];
+  projects.forEach(p=>{
+    if(p.due) evs.push({date:p.due,type:'deadline',title:p.name,sub:p.client,cls:'ev-deadline'});
+    if(p.deposit) evs.push({date:p.deposit,type:'payment',title:'收頭款：'+p.name,sub:p.client,cls:'ev-payment'});
+    if(p.final) evs.push({date:p.final,type:'payment',title:'收尾款：'+p.name,sub:p.client,cls:'ev-payment'});
+    if(p.paidDate) evs.push({date:p.paidDate,type:'payment',title:'已收款：'+p.name,sub:p.client,cls:'ev-payment'});
+    if(p.proposal) evs.push({date:p.proposal,type:'proposal',title:'提案：'+p.name,sub:p.client,cls:'ev-proposal'});
+    if(p.invoice) evs.push({date:p.invoice,type:'invoice',title:'開立發票：'+p.name,sub:p.client,cls:'ev-invoice'});
+    if(p.revision) evs.push({date:p.revision,type:'revision',title:'調整期限：'+p.name,sub:p.client,cls:'ev-revision'});
+  });
+  todos.filter(t=>t.due&&!t.done).forEach(t=>{
+    evs.push({date:t.due,type:'todo',title:t.text,sub:t.project||'',cls:'ev-todo'});
+  });
+  return evs;
+}
+
+const DOT_CLASS={deadline:'dot-deadline',payment:'dot-payment',proposal:'dot-proposal',invoice:'dot-invoice',revision:'dot-revision',todo:'dot-todo'};
+const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DAYS=['日','一','二','三','四','五','六'];
+
+function renderCalendar(){
+  const label=document.getElementById('cal-month-label');
+  label.textContent=`${calYear} 年 ${MONTHS[calMonth]}`;
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  DAYS.forEach(d=>{const el=document.createElement('div');el.className='cal-dow';el.textContent=d;grid.appendChild(el);});
+  const evs=getCalEvents();
+  const evMap={};
+  evs.forEach(e=>{if(!evMap[e.date])evMap[e.date]=[];evMap[e.date].push(e);});
+  const first=new Date(calYear,calMonth,1).getDay();
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+  const total=Math.ceil((first+daysInMonth)/7)*7;
+  for(let i=0;i<total;i++){
+    let day,month,year,otherMonth=false;
+    if(i<first){day=prevDays-first+i+1;month=calMonth-1;year=calYear;if(month<0){month=11;year--;}otherMonth=true;}
+    else if(i>=first+daysInMonth){day=i-first-daysInMonth+1;month=calMonth+1;year=calYear;if(month>11){month=0;year++;}otherMonth=true;}
+    else{day=i-first+1;month=calMonth;year=calYear;}
+    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday=dateStr===todayStr;
+    const isSel=dateStr===calSelectedDay;
+    const cell=document.createElement('div');
+    cell.className='cal-day'+(otherMonth?' other-month':'')+(isToday?' today':'')+(isSel?' selected':'');
+    if(isSel)cell.style.background='var(--bg3)';
+    const num=document.createElement('div');
+    num.className='cal-daynum';
+    num.textContent=day;
+    cell.appendChild(num);
+    const dots=document.createElement('div');
+    dots.className='cal-dots';
+    (evMap[dateStr]||[]).slice(0,4).forEach(e=>{const dot=document.createElement('div');dot.className='dot '+DOT_CLASS[e.type];dots.appendChild(dot);});
+    cell.appendChild(dots);
+    cell.onclick=()=>{calSelectedDay=dateStr;renderCalendar();renderSelectedEvents(dateStr,evMap[dateStr]||[]);};
+    grid.appendChild(cell);
+  }
+  renderMonthEvents(evs.filter(e=>{const d=e.date;return d>=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`&&d<=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;}));
+  if(calSelectedDay&&evMap[calSelectedDay])renderSelectedEvents(calSelectedDay,evMap[calSelectedDay]);
+}
+
+function renderSelectedEvents(date,evs){
+  const el=document.getElementById('cal-selected-events');
+  if(!evs.length){el.innerHTML='';return;}
+  const d=new Date(date+'T00:00:00');
+  el.innerHTML=`<div class="ev-month-title">${d.getMonth()+1}/${d.getDate()} 節點</div>`+evs.map(e=>`<div class="event-item ${e.cls}"><div class="event-info"><div class="event-title">${e.title}</div>${e.sub?`<div class="event-sub">${e.sub}</div>`:''}</div></div>`).join('');
+}
+
+function renderMonthEvents(evs){
+  const el=document.getElementById('cal-month-events');
+  if(!evs.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;">本月無節點</div>';return;}
+  evs.sort((a,b)=>a.date.localeCompare(b.date));
+  el.innerHTML=evs.map(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    const od=e.date<todayStr;
+    return `<div class="event-item ${e.cls}"><div class="event-date" style="${od?'color:#c0392b;':''}">${d.getMonth()+1}/${d.getDate()}</div><div class="event-info"><div class="event-title">${e.title}</div>${e.sub?`<div class="event-sub">${e.sub}</div>`:''}</div></div>`;
+  }).join('');
+}
+
+function calPrev(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;calSelectedDay=null;renderCalendar();}
+function calNext(){if(calMonth===11){calMonth=0;calYear++;}else calMonth++;calSelectedDay=null;renderCalendar();}
+function calGoToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelectedDay=todayStr;renderCalendar();}
+
+// ── TODO ─────────────────────────────────────────────
+function renderTodo(){
+  const sel=document.getElementById('todo-project');
+  sel.innerHTML='<option value="">無關聯</option>'+projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  const groups={};
+  todos.forEach(t=>{const g=t.project||'其他';if(!groups[g])groups[g]=[];groups[g].push(t);});
+  const list=document.getElementById('todo-list');
+  list.innerHTML='';
+  Object.entries(groups).forEach(([g,items])=>{
+    const sec=document.createElement('div');
+    sec.style.marginBottom='16px';
+    sec.innerHTML=`<div class="sec-head"><span class="sec-title">${g}</span></div>`;
+    const wrap=document.createElement('div');
+    items.forEach(t=>{
+      const od=isOverdue(t.due)&&!t.done;
+      const row=document.createElement('div');
+      row.className='todo-item';
+      row.innerHTML=`<div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id})"></div><div style="flex:1;"><div class="todo-text${t.done?' done':''}">${t.text}</div>${t.due?`<div class="todo-due${od?' overdue':''}">${od?'逾期 ':'截止 '}${t.due}</div>`:''}</div><div class="todo-del" onclick="deleteTodo(${t.id})">×</div>`;
+      wrap.appendChild(row);
+    });
+    sec.appendChild(wrap);
+    list.appendChild(sec);
+  });
+}
+
+function toggleTodo(id){const t=todos.find(x=>x.id===id);if(t){t.done=!t.done;persist();renderTodo();if(currentTab==='calendar')renderCalendar();}}
+function deleteTodo(id){if(confirm('刪除此待辦？')){todos=todos.filter(x=>x.id!==id);persist();renderTodo();}}
+function addTodo(){
+  const text=document.getElementById('new-todo').value.trim();
+  if(!text)return;
+  todos.push({id:nextId.t++,text,project:document.getElementById('todo-project').value,due:document.getElementById('todo-due').value,done:false});
+  document.getElementById('new-todo').value='';document.getElementById('todo-due').value='';
+  persist();renderTodo();
+}
+
+// ── FINANCE ──────────────────────────────────────────
+function renderFinance(){
+  const total=projects.reduce((s,p)=>s+p.amount,0);
+  const paid=projects.filter(p=>p.status==='已收款').reduce((s,p)=>s+p.amount,0);
+  const invoiced=projects.filter(p=>p.status==='已開發票').reduce((s,p)=>s+p.amount,0);
+  const wip=projects.filter(p=>p.status==='進行中'||p.status==='待審稿').reduce((s,p)=>s+p.amount,0);
+  document.getElementById('stat-row').innerHTML=`
+    <div class="stat-card"><div class="stat-label">總報價</div><div class="stat-val">$${total.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">已收款</div><div class="stat-val green">$${paid.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">已開發票</div><div class="stat-val purple">$${invoiced.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">進行中</div><div class="stat-val amber">$${wip.toLocaleString()}</div></div>`;
+  document.getElementById('finance-body').innerHTML=projects.map(p=>{
+    const od=isOverdue(p.due)&&p.status!=='已收款';
+    return `<tr onclick="openEditProject(${p.id})" style="cursor:pointer;"><td>${p.name}</td><td>${p.client}</td><td>$${p.amount.toLocaleString()}</td><td style="${od?'color:#c0392b;font-weight:600;':''}">${p.due||'—'}</td><td><span class="pill ${PILL_MAP[p.status]||'s-quote'}">${p.status}</span></td></tr>`;
+  }).join('');
+}
+
+// ── CLIENTS ──────────────────────────────────────────
+function renderClients(){
+  const list=document.getElementById('client-list');
+  list.innerHTML=clients.map((c,i)=>{
+    const count=projects.filter(p=>p.client===c.name).length;
+    const total=projects.filter(p=>p.client===c.name).reduce((s,p)=>s+p.amount,0);
+    return `<div class="client-card"><div class="client-top"><div class="avatar ${AVCOLORS[i%4]}">${c.name.slice(0,2)}</div><div><div class="client-name">${c.name}</div><div class="client-type">${c.type}</div></div></div><div class="client-row"><span>案件數</span><span>${count} 件</span></div><div class="client-row"><span>累計金額</span><span>$${total.toLocaleString()}</span></div><div class="client-row"><span>聯絡</span><span style="font-size:12px;font-weight:400;">${c.contact}</span></div></div>`;
+  }).join('');
+}
+
+// ── PROJECT SHEET ─────────────────────────────────────
+function openAddProject(defaultStatus){
+  editingProjectId=null;
+  document.getElementById('sheet-project-title').textContent='新增案件';
+  document.getElementById('sheet-project-save').textContent='新增';
+  const sel=document.getElementById('m-pclient');
+  sel.innerHTML=clients.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-ppaiddate','m-pnote'].forEach(id=>document.getElementById(id).value='');
+  if(defaultStatus)document.getElementById('m-pstatus').value=defaultStatus;
+  else document.getElementById('m-pstatus').value='詢價';
+  document.getElementById('notes-log-wrap').style.display='none';
+  document.getElementById('delete-project-wrap').style.display='none';
+  document.getElementById('sheet-project').classList.add('open');
+}
+
+function openEditProject(id){
+  editingProjectId=id;
+  const p=projects.find(x=>x.id===id);if(!p)return;
+  document.getElementById('sheet-project-title').textContent='編輯案件';
+  document.getElementById('sheet-project-save').textContent='儲存';
+  const sel=document.getElementById('m-pclient');
+  sel.innerHTML=clients.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  sel.value=p.client;
+  document.getElementById('m-pname').value=p.name;
+  document.getElementById('m-ptype').value=p.type;
+  document.getElementById('m-pamount').value=p.amount;
+  document.getElementById('m-pstatus').value=p.status;
+  document.getElementById('m-pdue').value=p.due||'';
+  document.getElementById('m-pproposal').value=p.proposal||'';
+  document.getElementById('m-prevision').value=p.revision||'';
+  document.getElementById('m-pinvoice').value=p.invoice||'';
+  document.getElementById('m-pdeposit').value=p.deposit||'';
+  document.getElementById('m-pfinal').value=p.final||'';
+  document.getElementById('m-ppaiddate').value=p.paidDate||'';
+  document.getElementById('m-pnote').value='';
+  const notes=p.notes||[];
+  if(notes.length){
+    document.getElementById('notes-log-wrap').style.display='block';
+    document.getElementById('notes-log').innerHTML=notes.slice().reverse().map(n=>`<div class="note-entry"><div class="note-ts">${n.ts}</div><div class="note-text">${n.text}</div></div>`).join('');
+  }else{document.getElementById('notes-log-wrap').style.display='none';}
+  document.getElementById('delete-project-wrap').style.display='block';
+  document.getElementById('sheet-project').classList.add('open');
+}
+
+function saveProject(){
+  const name=document.getElementById('m-pname').value.trim();
+  if(!name)return;
+  const noteText=document.getElementById('m-pnote').value.trim();
+  const ts=new Date().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const data={
+    name,client:document.getElementById('m-pclient').value,
+    type:document.getElementById('m-ptype').value,
+    amount:parseInt(document.getElementById('m-pamount').value)||0,
+    status:document.getElementById('m-pstatus').value,
+    due:document.getElementById('m-pdue').value,
+    proposal:document.getElementById('m-pproposal').value,
+    revision:document.getElementById('m-prevision').value,
+    invoice:document.getElementById('m-pinvoice').value,
+    deposit:document.getElementById('m-pdeposit').value,
+    final:document.getElementById('m-pfinal').value,
+    paidDate:document.getElementById('m-ppaiddate').value,
+  };
+  if(editingProjectId){
+    const p=projects.find(x=>x.id===editingProjectId);
+    if(p){
+      const changes=[];
+      if(p.name!==data.name)changes.push(`名稱：${p.name}→${data.name}`);
+      if(p.status!==data.status)changes.push(`狀態：${p.status}→${data.status}`);
+      if(p.amount!==data.amount)changes.push(`金額：$${p.amount.toLocaleString()}→$${data.amount.toLocaleString()}`);
+      Object.assign(p,data);
+      if(!p.notes)p.notes=[];
+      if(noteText)p.notes.push({ts,text:noteText});
+      if(changes.length)p.notes.push({ts,text:'修改：'+changes.join('；')});
+    }
+  }else{
+    const notes=noteText?[{ts,text:noteText}]:[];
+    projects.push({id:nextId.p++,...data,notes});
+  }
+  closeSheet('sheet-project');persist();
+  if(currentTab==='kanban')renderKanban();
+  if(currentTab==='finance')renderFinance();
+  if(currentTab==='calendar')renderCalendar();
+}
+
+function deleteProject(){
+  if(!confirm('確定刪除此案件？'))return;
+  projects=projects.filter(x=>x.id!==editingProjectId);
+  closeSheet('sheet-project');persist();
+  if(currentTab==='kanban')renderKanban();
+  if(currentTab==='finance')renderFinance();
+  if(currentTab==='calendar')renderCalendar();
+}
+
+// ── CLIENT SHEET ──────────────────────────────────────
+function openAddClient(){
+  ['m-cname','m-ctype','m-ccontact'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sheet-client').classList.add('open');
+}
+function saveClient(){
+  const name=document.getElementById('m-cname').value.trim();
+  if(!name)return;
+  clients.push({id:nextId.c++,name,type:document.getElementById('m-ctype').value,contact:document.getElementById('m-ccontact').value});
+  closeSheet('sheet-client');persist();renderClients();
+}
+
+// ── SHEET CONTROL ─────────────────────────────────────
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+// ── TAX CALC ─────────────────────────────────────────
+function getRate(){return parseInt(document.getElementById('tax-rate').value)/100;}
+function fmtM(v){return isNaN(v)||v===''?'—':'$'+Math.round(v).toLocaleString();}
+function calcFromInc(){const inc=parseFloat(document.getElementById('tax-inc').value);if(isNaN(inc)){clearTax();return;}const r=getRate();const exc=inc/(1+r);document.getElementById('tax-exc').value='';document.getElementById('r-exc').textContent=fmtM(exc);document.getElementById('r-tax').textContent=fmtM(inc-exc);document.getElementById('r-inc').textContent=fmtM(inc);}
+function calcFromExc(){const exc=parseFloat(document.getElementById('tax-exc').value);if(isNaN(exc)){clearTax();return;}const r=getRate();const tax=exc*r;document.getElementById('tax-inc').value='';document.getElementById('r-exc').textContent=fmtM(exc);document.getElementById('r-tax').textContent=fmtM(tax);document.getElementById('r-inc').textContent=fmtM(exc+tax);}
+function recalcTax(){if(document.getElementById('tax-inc').value)calcFromInc();else if(document.getElementById('tax-exc').value)calcFromExc();}
+function clearTax(){['r-exc','r-tax','r-inc'].forEach(id=>document.getElementById(id).textContent='—');}
+
+// ── EXPORT CSV ───────────────────────────────────────
+function exportCSV(){
+  const rows=[['案件名稱','客戶','類型','報價(TWD)','截止日','提案日','調整期限','發票日','收頭款','收尾款','收款日','收款狀態']];
+  projects.forEach(p=>rows.push([p.name,p.client,TAG_LABEL[p.type],p.amount,p.due||'',p.proposal||'',p.revision||'',p.invoice||'',p.deposit||'',p.final||'',p.paidDate||'',p.status]));
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='接案紀錄.csv';a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── PWA ───────────────────────────────────────────────
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+}
+
+renderKanban();
+</script>
+</body>
+</html>
