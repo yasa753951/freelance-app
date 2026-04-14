@@ -10,126 +10,129 @@
 <link rel="manifest" href="manifest.json"/>
 <title>接案管理</title>
 <style>
-:root {
-  --bg: #ffffff;
-  --bg2: #f5f5f3;
-  --bg3: #eeede9;
-  --text: #1a1a1a;
-  --text2: #666660;
-  --text3: #aaa9a3;
-  --border: rgba(0,0,0,0.1);
-  --border2: rgba(0,0,0,0.18);
-  --radius: 10px;
-  --radius-lg: 14px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#eeedea;
+  --text:#1a1a1a;--text2:#666660;--text3:#aaa9a4;
+  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --radius:10px;--radius-lg:14px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --green:#0a7c5c;--purple:#4a3db0;--amber:#8a5200;--red:#c0392b;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1a1a;
-    --bg2: #252525;
-    --bg3: #2e2e2e;
-    --text: #f0efe9;
-    --text2: #999890;
-    --text3: #666560;
-    --border: rgba(255,255,255,0.1);
-    --border2: rgba(255,255,255,0.18);
-  }
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1a1a1a;--bg2:#252525;--bg3:#2e2e2e;--text:#f0efe9;--text2:#999890;--text3:#666560;--border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);}
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;line-height:1.5;overflow:hidden;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;overflow:hidden;}
 
-/* layout */
+/* ── LOCK SCREEN ── */
+#lock-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;padding:40px 32px;}
+#lock-screen h2{font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px;}
+#lock-screen p{font-size:14px;color:var(--text2);margin-bottom:32px;}
+#lock-screen input{width:100%;max-width:300px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:12px;padding:14px 16px;font-size:16px;color:var(--text);font-family:inherit;text-align:center;letter-spacing:4px;margin-bottom:12px;}
+#lock-screen button{width:100%;max-width:300px;padding:14px;background:var(--text);color:var(--bg);border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+#lock-err{font-size:13px;color:var(--red);min-height:20px;margin-top:4px;text-align:center;}
+.lock-setup{margin-top:24px;font-size:13px;color:var(--text3);text-align:center;}
+.lock-setup span{color:var(--text2);text-decoration:underline;cursor:pointer;}
+
+/* ── APP ── */
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
 .topbar{padding:14px 16px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--border);flex-shrink:0;}
-.topbar h1{font-size:17px;font-weight:600;letter-spacing:-0.3px;}
-.topbar-right{display:flex;align-items:center;gap:8px;}
-.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:0 0 calc(64px + var(--safe-bottom));}
+.topbar h1{font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.topbar-actions{display:flex;align-items:center;gap:8px;}
+.icon-btn{background:none;border:0.5px solid var(--border2);border-radius:8px;padding:5px 10px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;white-space:nowrap;}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block;margin-right:5px;transition:background 0.3s;}
+.sync-dot.ok{background:#1D9E75;}
+.sync-dot.err{background:#e74c3c;}
+.sync-dot.loading{background:#f39c12;animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(64px + var(--safe-b));}
 .view{display:none;padding:14px 16px;}
 .view.active{display:block;}
 
-/* bottom nav */
-.nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border);display:flex;padding-bottom:var(--safe-bottom);z-index:50;}
+/* ── NAV ── */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border);display:flex;padding-bottom:var(--safe-b);z-index:50;}
 .nav-btn{flex:1;padding:8px 4px 10px;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;color:var(--text3);font-size:10px;font-family:inherit;transition:color 0.15s;}
 .nav-btn.active{color:var(--text);}
-.nav-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;}
 .nav-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 
-/* cards */
-.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;}
+/* ── CARDS ── */
+.card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px;cursor:pointer;}
 .card:active{background:var(--bg2);}
+.card.overdue{border-left:2.5px solid #e74c3c;}
 .card-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;}
 .card-sub{font-size:13px;color:var(--text2);margin-bottom:8px;}
 .card-row{display:flex;align-items:center;justify-content:space-between;}
+.card-amount{font-size:13px;color:var(--text2);}
+.card-date{font-size:12px;color:var(--text3);margin-top:5px;}
+.card-date.overdue{color:var(--red);font-weight:600;}
 .tag{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
 .tag-brand{background:#EEEDFE;color:#3C3489;}
 .tag-pkg{background:#E1F5EE;color:#085041;}
 .tag-web{background:#E6F1FB;color:#0C447C;}
 .tag-other{background:#F1EFE8;color:#444441;}
-.card-amount{font-size:13px;color:var(--text2);}
-.card-date{font-size:12px;color:var(--text3);margin-top:5px;}
-.card-date.overdue{color:#c0392b;font-weight:600;}
-.card.overdue{border-left:2.5px solid #e74c3c;}
 
-/* section header */
-.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;margin-top:18px;}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;margin-top:18px;}
 .sec-head:first-child{margin-top:0;}
-.sec-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;}
+.sec-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;}
 .sec-count{font-size:11px;color:var(--text3);background:var(--bg3);padding:1px 8px;border-radius:20px;}
+.add-row-btn{width:100%;padding:9px;border:0.5px dashed var(--border2);border-radius:var(--radius);background:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:6px;}
+.add-row-btn:active{background:var(--bg2);}
 
-/* add fab */
-.fab{position:fixed;right:18px;bottom:calc(72px + var(--safe-bottom));width:50px;height:50px;border-radius:50%;background:var(--text);color:var(--bg);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.2);z-index:40;transition:transform 0.1s;}
-.fab:active{transform:scale(0.93);}
+/* ── FAB ── */
+.fab{position:fixed;right:18px;bottom:calc(72px + var(--safe-b));width:50px;height:50px;border-radius:50%;background:var(--text);color:var(--bg);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.18);z-index:40;}
+.fab:active{transform:scale(0.92);}
 
-/* status pills */
-.pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;white-space:nowrap;}
+/* ── PILLS ── */
+.pill{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;}
 .s-quote{background:#F1EFE8;color:#444441;}
 .s-wip{background:#FAEEDA;color:#633806;}
 .s-invoiced{background:#EEEDFE;color:#3C3489;}
 .s-paid{background:#E1F5EE;color:#085041;}
 
-/* stat row */
+/* ── STATS ── */
 .stat-row{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
 .stat-card{background:var(--bg2);border-radius:var(--radius);padding:12px 14px;}
 .stat-label{font-size:11px;color:var(--text2);margin-bottom:3px;}
-.stat-val{font-size:20px;font-weight:600;color:var(--text);}
-.stat-val.green{color:#0a7c5c;}
-.stat-val.purple{color:#4a3db0;}
-.stat-val.amber{color:#8a5200;}
+.stat-val{font-size:20px;font-weight:700;color:var(--text);}
+.stat-val.green{color:var(--green);}
+.stat-val.purple{color:var(--purple);}
+.stat-val.amber{color:var(--amber);}
 
-/* finance table */
+/* ── FINANCE TABLE ── */
 .ftable-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -16px;padding:0 16px;}
-.ftable{width:100%;border-collapse:collapse;font-size:13px;min-width:400px;}
+.ftable{width:100%;border-collapse:collapse;font-size:13px;min-width:380px;}
 .ftable th{text-align:left;font-weight:500;color:var(--text2);font-size:11px;padding:6px 8px;border-bottom:0.5px solid var(--border);}
-.ftable td{padding:9px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle;}
+.ftable td{padding:9px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle;cursor:pointer;}
 .ftable tr:last-child td{border-bottom:none;}
 
-/* tax box */
+/* ── TAX ── */
 .tax-box{background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:16px;}
-.tax-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.tax-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:10px;}
 .tax-field{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
 .tax-field label{font-size:12px;color:var(--text2);width:60px;flex-shrink:0;}
 .tax-field input,.tax-field select{flex:1;background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:inherit;}
 .tax-result{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
-.tax-item{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 10px;}
+.tax-item{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px;}
 .tax-item-label{font-size:11px;color:var(--text2);margin-bottom:2px;}
 .tax-item-val{font-size:15px;font-weight:600;color:var(--text);}
 
-/* todo */
+/* ── TODO ── */
 .todo-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);}
 .todo-item:last-child{border-bottom:none;}
-.todo-check{width:18px;height:18px;border:1.5px solid var(--border2);border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;}
+.todo-check{width:18px;height:18px;border:1.5px solid var(--border2);border-radius:5px;flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .todo-check.done{background:#1D9E75;border-color:#1D9E75;}
 .todo-check.done::after{content:'';display:block;width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px);}
 .todo-text{flex:1;font-size:14px;color:var(--text);line-height:1.4;}
 .todo-text.done{text-decoration:line-through;color:var(--text3);}
 .todo-due{font-size:11px;color:var(--text3);margin-top:2px;}
-.todo-due.overdue{color:#c0392b;font-weight:600;}
-.todo-del{font-size:20px;color:var(--text3);cursor:pointer;line-height:1;padding:0 2px;align-self:center;}
+.todo-due.overdue{color:var(--red);font-weight:600;}
+.todo-del{font-size:22px;color:var(--text3);cursor:pointer;padding:0 2px;align-self:center;line-height:1;}
 
-/* clients */
+/* ── CLIENTS ── */
 .client-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;}
 .client-top{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
-.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;}
+.avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;}
 .av-purple{background:#EEEDFE;color:#3C3489;}
 .av-teal{background:#E1F5EE;color:#085041;}
 .av-amber{background:#FAEEDA;color:#633806;}
@@ -139,125 +142,137 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 .client-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text2);margin-bottom:3px;}
 .client-row span:last-child{color:var(--text);font-weight:500;}
 
-/* CALENDAR */
+/* ── CALENDAR ── */
 .cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
-.cal-nav{display:flex;align-items:center;gap:12px;}
-.cal-nav button{background:none;border:0.5px solid var(--border2);border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--text);font-size:16px;display:flex;align-items:center;justify-content:center;}
-.cal-month{font-size:16px;font-weight:600;color:var(--text);}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:14px;}
+.cal-nav{display:flex;align-items:center;gap:10px;}
+.cal-nav button{background:none;border:0.5px solid var(--border2);border-radius:8px;width:32px;height:32px;cursor:pointer;color:var(--text);font-size:18px;display:flex;align-items:center;justify-content:center;}
+.cal-month{font-size:16px;font-weight:700;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:12px;}
 .cal-dow{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;}
-.cal-day{min-height:56px;border-radius:8px;padding:4px 4px 3px;background:var(--bg2);cursor:pointer;transition:background 0.1s;position:relative;}
+.cal-day{min-height:52px;border-radius:8px;padding:4px 3px 3px;background:var(--bg2);cursor:pointer;position:relative;}
 .cal-day:active{background:var(--bg3);}
+.cal-day.selected{background:var(--bg3);outline:1.5px solid var(--border2);}
 .cal-day.today .cal-daynum{background:var(--text);color:var(--bg);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 2px;}
 .cal-day.other-month .cal-daynum{color:var(--text3);}
-.cal-daynum{font-size:12px;font-weight:500;color:var(--text);text-align:center;margin-bottom:2px;line-height:22px;}
-.cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;padding:0 2px;}
-.dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.cal-daynum{font-size:12px;font-weight:500;color:var(--text);text-align:center;line-height:22px;margin-bottom:2px;}
+.cal-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;}
+.dot{width:5px;height:5px;border-radius:50%;}
 .dot-deadline{background:#888;}
 .dot-payment{background:#1D9E75;}
 .dot-proposal{background:#7F77DD;}
 .dot-invoice{background:#378ADD;}
 .dot-revision{background:#BA7517;}
 .dot-todo{background:#E24B4A;}
-
-/* event list below calendar */
 .cal-legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:14px;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.events-list{display:flex;flex-direction:column;gap:8px;}
-.event-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:var(--radius);border-left:3px solid transparent;}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+.event-item{display:flex;align-items:flex-start;gap:10px;padding:9px 12px;background:var(--bg2);border-radius:var(--radius);border-left:3px solid transparent;margin-bottom:6px;}
 .event-item.ev-deadline{border-left-color:#888;}
 .event-item.ev-payment{border-left-color:#1D9E75;}
 .event-item.ev-proposal{border-left-color:#7F77DD;}
 .event-item.ev-invoice{border-left-color:#378ADD;}
 .event-item.ev-revision{border-left-color:#BA7517;}
 .event-item.ev-todo{border-left-color:#E24B4A;}
-.event-date{font-size:12px;color:var(--text2);min-width:36px;}
-.event-info{flex:1;}
+.event-date{font-size:12px;color:var(--text2);min-width:32px;flex-shrink:0;}
 .event-title{font-size:13px;font-weight:500;color:var(--text);}
 .event-sub{font-size:12px;color:var(--text2);}
-.ev-month-title{font-size:13px;font-weight:600;color:var(--text2);margin:14px 0 6px;}
+.ev-section-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin:14px 0 6px;}
 
-/* modal */
+/* ── INPUT ROW ── */
+.input-add-row{display:flex;gap:8px;padding:12px 0 0;border-top:0.5px solid var(--border);margin-top:4px;flex-wrap:wrap;}
+.input-add-row input,.input-add-row select{flex:1;min-width:0;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;}
+.input-add-row button{background:var(--text);color:var(--bg);border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;}
+
+/* ── SHEET ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center;}
 .overlay.open{display:flex;}
-.sheet{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:18px 18px calc(20px + var(--safe-bottom));animation:slideUp 0.25s ease;}
+.sheet{background:var(--bg);border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;padding:16px 18px calc(20px + var(--safe-b));animation:slideUp 0.22s ease;}
 @keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
-.sheet-handle{width:36px;height:4px;background:var(--bg3);border-radius:2px;margin:0 auto 16px;}
-.sheet-title{font-size:17px;font-weight:600;margin-bottom:16px;}
-.form-field{margin-bottom:12px;}
+.sheet-handle{width:36px;height:4px;background:var(--bg3);border-radius:2px;margin:0 auto 14px;}
+.sheet-title{font-size:17px;font-weight:700;margin-bottom:14px;}
+.form-field{margin-bottom:11px;}
 .form-field label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500;}
 .form-field input,.form-field select,.form-field textarea{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;-webkit-appearance:none;}
-.form-field textarea{min-height:72px;resize:vertical;line-height:1.5;}
-.form-section{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 8px;padding-top:12px;border-top:0.5px solid var(--border);}
-.btn-row{display:flex;gap:10px;margin-top:18px;}
-.btn{flex:1;padding:13px;border-radius:11px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;transition:opacity 0.15s;}
+.form-field textarea{min-height:70px;resize:vertical;line-height:1.5;}
+.form-section{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin:14px 0 8px;padding-top:12px;border-top:0.5px solid var(--border);}
+.btn-row{display:flex;gap:10px;margin-top:16px;}
+.btn{flex:1;padding:13px;border-radius:11px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;}
 .btn:active{opacity:0.7;}
 .btn-cancel{background:var(--bg2);color:var(--text);}
 .btn-save{background:var(--text);color:var(--bg);}
-.btn-danger{background:#fff0ef;color:#c0392b;}
+.btn-danger{background:#fff0ef;color:var(--red);}
 .note-entry{background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
 .note-ts{font-size:11px;color:var(--text3);margin-bottom:2px;}
 .note-text{font-size:13px;color:var(--text);}
-.export-btn{background:none;border:0.5px solid var(--border2);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--text2);cursor:pointer;font-family:inherit;}
 
-/* input add row */
-.input-add-row{display:flex;gap:8px;padding:14px 0 0;border-top:0.5px solid var(--border);margin-top:4px;}
-.input-add-row input,.input-add-row select{flex:1;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:9px 12px;font-size:13px;color:var(--text);font-family:inherit;min-width:0;}
-.input-add-row button{background:var(--text);color:var(--bg);border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:inherit;}
+/* ── SETTINGS ── */
+.settings-section{margin-bottom:24px;}
+.settings-title{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px;}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg2);border-radius:var(--radius);margin-bottom:6px;}
+.settings-row-label{font-size:14px;color:var(--text);}
+.settings-row-sub{font-size:12px;color:var(--text2);margin-top:1px;}
+.settings-row button{background:var(--bg);border:0.5px solid var(--border2);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--text);cursor:pointer;font-family:inherit;}
+.api-input{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:13px;color:var(--text);font-family:inherit;margin-top:6px;}
+.import-zone{border:1.5px dashed var(--border2);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;color:var(--text2);font-size:14px;margin-top:6px;}
+.import-zone:active{background:var(--bg2);}
+.import-result{font-size:13px;color:var(--green);margin-top:8px;min-height:18px;}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- ── LOCK SCREEN ── -->
+<div id="lock-screen">
+  <h2>接案管理</h2>
+  <p id="lock-sub">請輸入密碼</p>
+  <input type="password" id="lock-input" placeholder="••••••" maxlength="20" onkeydown="if(event.key==='Enter')tryUnlock()"/>
+  <button onclick="tryUnlock()">解鎖</button>
+  <div id="lock-err"></div>
+  <div class="lock-setup" id="lock-setup-hint"></div>
+</div>
+
+<!-- ── APP ── -->
+<div class="app" id="app" style="display:none;">
   <div class="topbar">
     <h1>接案管理</h1>
-    <div class="topbar-right">
-      <button class="export-btn" onclick="exportCSV()">匯出 CSV</button>
+    <div class="topbar-actions">
+      <span class="sync-dot" id="sync-dot"></span>
+      <button class="icon-btn" onclick="syncNow()" id="sync-btn">同步</button>
+      <button class="icon-btn" onclick="switchTab('settings',5)">設定</button>
     </div>
   </div>
-
   <div class="content">
-    <!-- KANBAN -->
-    <div class="view active" id="v-kanban">
-      <div id="kanban-list"></div>
-    </div>
-
-    <!-- CALENDAR -->
+    <div class="view active" id="v-kanban"><div id="kanban-list"></div></div>
     <div class="view" id="v-calendar">
       <div class="cal-header">
         <div class="cal-nav">
-          <button onclick="calPrev()">&#8249;</button>
+          <button onclick="calPrev()">‹</button>
           <span class="cal-month" id="cal-month-label"></span>
-          <button onclick="calNext()">&#8250;</button>
+          <button onclick="calNext()">›</button>
         </div>
-        <button style="background:none;border:0.5px solid var(--border2);border-radius:8px;padding:4px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;" onclick="calGoToday()">今天</button>
+        <button class="icon-btn" onclick="calGoToday()">今天</button>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="cal-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#888;"></div>截止日</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#888;"></div>截止</div>
         <div class="legend-item"><div class="legend-dot" style="background:#1D9E75;"></div>收款</div>
         <div class="legend-item"><div class="legend-dot" style="background:#7F77DD;"></div>提案</div>
         <div class="legend-item"><div class="legend-dot" style="background:#378ADD;"></div>發票</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>調整期限</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#BA7517;"></div>調整</div>
         <div class="legend-item"><div class="legend-dot" style="background:#E24B4A;"></div>待辦</div>
       </div>
       <div id="cal-selected-events"></div>
-      <div class="ev-month-title">本月所有節點</div>
+      <div class="ev-section-title">本月節點</div>
       <div id="cal-month-events"></div>
     </div>
-
-    <!-- TODO -->
     <div class="view" id="v-todo">
       <div id="todo-list"></div>
       <div class="input-add-row">
-        <input type="text" id="new-todo" placeholder="新增待辦..." />
+        <input type="text" id="new-todo" placeholder="新增待辦..."/>
         <select id="todo-project"></select>
-        <input type="date" id="todo-due" style="width:130px;flex:none;" />
+        <input type="date" id="todo-due" style="width:130px;flex:none;"/>
         <button onclick="addTodo()">+</button>
       </div>
     </div>
-
-    <!-- FINANCE -->
     <div class="view" id="v-finance">
       <div class="tax-box">
         <div class="tax-title">稅率換算</div>
@@ -277,6 +292,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
         </div>
       </div>
       <div class="stat-row" id="stat-row"></div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+        <button class="icon-btn" onclick="exportCSV()">匯出 CSV</button>
+      </div>
       <div class="ftable-wrap">
         <table class="ftable">
           <thead><tr><th>案件</th><th>客戶</th><th>金額</th><th>截止</th><th>狀態</th></tr></thead>
@@ -284,61 +302,87 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
         </table>
       </div>
     </div>
-
-    <!-- CLIENTS -->
-    <div class="view" id="v-clients">
-      <div id="client-list"></div>
+    <div class="view" id="v-clients"><div id="client-list"></div></div>
+    <div class="view" id="v-settings">
+      <div class="settings-section">
+        <div class="settings-title">Google Sheets 同步</div>
+        <div class="settings-row" style="flex-direction:column;align-items:flex-start;">
+          <div class="settings-row-label">Apps Script 網址</div>
+          <div class="settings-row-sub">部署後取得的 Web App URL</div>
+          <input class="api-input" type="text" id="api-url-input" placeholder="https://script.google.com/macros/s/…/exec" oninput="saveApiUrl()"/>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">連線狀態</div><div class="settings-row-sub" id="sync-status-text">未設定</div></div>
+          <button onclick="syncNow()">立即同步</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">匯入 Excel / CSV</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:8px;">支援欄位：客戶名稱、案件名稱、報價金額、案件狀態、備註、收款日、發票日</div>
+        <div class="import-zone" onclick="document.getElementById('import-file').click()">
+          點此選擇 .xlsx 或 .csv 檔案
+          <input type="file" id="import-file" accept=".xlsx,.xls,.csv" style="display:none;" onchange="handleImport(event)"/>
+        </div>
+        <div class="import-result" id="import-result"></div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">密碼管理</div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">修改密碼</div><div class="settings-row-sub">目前已設定密碼保護</div></div>
+          <button onclick="openChangePassword()">修改</button>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">鎖定 App</div><div class="settings-row-sub">回到密碼輸入畫面</div></div>
+          <button onclick="lockApp()">鎖定</button>
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-title">資料</div>
+        <div class="settings-row">
+          <div><div class="settings-row-label">匯出備份</div><div class="settings-row-sub">下載完整 JSON 備份</div></div>
+          <button onclick="exportJSON()">匯出</button>
+        </div>
+        <div class="settings-row">
+          <div><div class="settings-row-label" style="color:var(--red);">清除所有資料</div><div class="settings-row-sub">無法復原</div></div>
+          <button onclick="clearAllData()" style="color:var(--red);">清除</button>
+        </div>
+      </div>
     </div>
   </div>
-
-  <!-- bottom nav -->
   <nav class="nav">
     <button class="nav-btn active" onclick="switchTab('kanban',0)" id="nb-0">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>
-      看板
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>看板
     </button>
     <button class="nav-btn" onclick="switchTab('calendar',1)" id="nb-1">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
-      月曆
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>月曆
     </button>
     <button class="nav-btn" onclick="switchTab('todo',2)" id="nb-2">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
-      待辦
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>待辦
     </button>
     <button class="nav-btn" onclick="switchTab('finance',3)" id="nb-3">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-      收款
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>收款
     </button>
     <button class="nav-btn" onclick="switchTab('clients',4)" id="nb-4">
-      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-      客戶
+      <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>客戶
     </button>
   </nav>
 </div>
 
-<!-- FAB -->
 <button class="fab" id="fab-btn" onclick="openAdd()">+</button>
 
 <!-- Project Sheet -->
 <div class="overlay" id="sheet-project">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title" id="sheet-project-title">新增案件</div>
-    <div class="form-field"><label>案件名稱</label><input type="text" id="m-pname" placeholder="例：品牌識別設計"/></div>
+    <div class="sheet-title" id="spt">新增案件</div>
+    <div class="form-field"><label>案件名稱</label><input type="text" id="m-pname"/></div>
     <div class="form-field"><label>客戶</label><select id="m-pclient"></select></div>
     <div class="form-field"><label>類型</label>
-      <select id="m-ptype">
-        <option value="brand">品牌設計</option><option value="pkg">包裝設計</option>
-        <option value="web">網頁設計</option><option value="other">其他</option>
-      </select>
+      <select id="m-ptype"><option value="brand">品牌設計</option><option value="pkg">包裝設計</option><option value="web">網頁設計</option><option value="other">其他</option></select>
     </div>
     <div class="form-field"><label>報價 (TWD)</label><input type="number" id="m-pamount" placeholder="0"/></div>
     <div class="form-field"><label>收款狀態</label>
-      <select id="m-pstatus">
-        <option value="詢價">詢價</option><option value="進行中">進行中</option>
-        <option value="待審稿">待審稿</option><option value="已開發票">已開發票</option>
-        <option value="已收款">已收款</option>
-      </select>
+      <select id="m-pstatus"><option value="詢價">詢價</option><option value="進行中">進行中</option><option value="待審稿">待審稿</option><option value="已開發票">已開發票</option><option value="已收款">已收款</option></select>
     </div>
     <div class="form-section">節點日期</div>
     <div class="form-field"><label>截止日期</label><input type="date" id="m-pdue"/></div>
@@ -356,9 +400,9 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
     </div>
     <div class="btn-row">
       <button class="btn btn-cancel" onclick="closeSheet('sheet-project')">取消</button>
-      <button class="btn btn-save" id="sheet-project-save" onclick="saveProject()">新增</button>
+      <button class="btn btn-save" id="sps" onclick="saveProject()">新增</button>
     </div>
-    <div id="delete-project-wrap" style="display:none;margin-top:10px;">
+    <div id="del-project-wrap" style="display:none;margin-top:10px;">
       <button class="btn btn-danger" style="width:100%;" onclick="deleteProject()">刪除此案件</button>
     </div>
   </div>
@@ -369,7 +413,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
   <div class="sheet">
     <div class="sheet-handle"></div>
     <div class="sheet-title">新增客戶</div>
-    <div class="form-field"><label>客戶名稱</label><input type="text" id="m-cname" placeholder="公司或個人名稱"/></div>
+    <div class="form-field"><label>客戶名稱</label><input type="text" id="m-cname"/></div>
     <div class="form-field"><label>產業類型</label><input type="text" id="m-ctype" placeholder="例：食品、科技..."/></div>
     <div class="form-field"><label>聯絡方式</label><input type="text" id="m-ccontact" placeholder="Email / Line"/></div>
     <div class="btn-row">
@@ -379,49 +423,254 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
   </div>
 </div>
 
-<script>
-// ── DATA ──────────────────────────────────────────────
-const K={p:'fpm3_projects',t:'fpm3_todos',c:'fpm3_clients'};
-function load(k){try{return JSON.parse(localStorage.getItem(k))||null;}catch(e){return null;}}
-function persist(){localStorage.setItem(K.p,JSON.stringify(projects));localStorage.setItem(K.t,JSON.stringify(todos));localStorage.setItem(K.c,JSON.stringify(clients));}
+<!-- Change Password Sheet -->
+<div class="overlay" id="sheet-pw">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">修改密碼</div>
+    <div class="form-field"><label>目前密碼</label><input type="password" id="pw-old" placeholder="輸入目前密碼"/></div>
+    <div class="form-field"><label>新密碼</label><input type="password" id="pw-new" placeholder="6 字元以上"/></div>
+    <div class="form-field"><label>確認新密碼</label><input type="password" id="pw-confirm" placeholder="再輸入一次"/></div>
+    <div id="pw-err" style="font-size:13px;color:var(--red);min-height:18px;"></div>
+    <div class="btn-row">
+      <button class="btn btn-cancel" onclick="closeSheet('sheet-pw')">取消</button>
+      <button class="btn btn-save" onclick="changePassword()">儲存</button>
+    </div>
+  </div>
+</div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════
+// CONSTANTS
+// ════════════════════════════════════════════════════
 const TAG_MAP={brand:'tag-brand',pkg:'tag-pkg',web:'tag-web',other:'tag-other'};
 const TAG_LABEL={brand:'品牌設計',pkg:'包裝設計',web:'網頁設計',other:'其他'};
 const STATUSES=['詢價','進行中','待審稿','已開發票','已收款'];
 const PILL_MAP={'已收款':'s-paid','已開發票':'s-invoiced','進行中':'s-wip','待審稿':'s-wip','詢價':'s-quote'};
 const AVCOLORS=['av-purple','av-teal','av-amber','av-coral'];
+const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+const DAYS=['日','一','二','三','四','五','六'];
+const DOT_CLASS={deadline:'dot-deadline',payment:'dot-payment',proposal:'dot-proposal',invoice:'dot-invoice',revision:'dot-revision',todo:'dot-todo'};
 
-let projects=load(K.p)||[
-  {id:1,name:'品牌識別設計',client:'好食光',type:'brand',amount:45000,status:'進行中',due:'2026-04-10',proposal:'2026-04-03',revision:'2026-04-08',invoice:'',deposit:'2026-03-28',final:'',paidDate:'',notes:[]},
-  {id:2,name:'茶飲包裝設計',client:'茶茶茶',type:'pkg',amount:28000,status:'待審稿',due:'2026-03-31',proposal:'',revision:'2026-03-29',invoice:'2026-04-05',deposit:'',final:'',paidDate:'',notes:[]},
-  {id:3,name:'官網視覺設計',client:'新創A',type:'web',amount:60000,status:'詢價',due:'2026-05-01',proposal:'2026-04-15',revision:'',invoice:'',deposit:'',final:'',paidDate:'',notes:[]},
-  {id:4,name:'年報設計',client:'好食光',type:'other',amount:35000,status:'已收款',due:'2026-02-28',proposal:'',revision:'',invoice:'2026-03-01',deposit:'',final:'2026-03-05',paidDate:'2026-03-05',notes:[]},
-];
-let todos=load(K.t)||[
-  {id:1,text:'準備好食光提案簡報',project:'品牌識別設計',due:'2026-04-02',done:false},
-  {id:2,text:'茶茶茶包裝修改第三版',project:'茶飲包裝設計',due:'2026-03-28',done:false},
-  {id:3,text:'寄報價單給新創A',project:'官網視覺設計',due:'',done:true},
-];
-let clients=load(K.c)||[
-  {id:1,name:'好食光',type:'食品飲料',contact:'ming@haoshiguang.tw'},
-  {id:2,name:'茶茶茶',type:'茶飲品牌',contact:'Line: chachachai'},
-  {id:3,name:'新創A',type:'科技新創',contact:'hello@startupa.com'},
-];
-let nextId={p:Math.max(...projects.map(x=>x.id),0)+1,t:Math.max(...todos.map(x=>x.id),0)+1,c:Math.max(...clients.map(x=>x.id),0)+1};
+// ════════════════════════════════════════════════════
+// STORAGE KEYS
+// ════════════════════════════════════════════════════
+const K={p:'fpm4_projects',t:'fpm4_todos',c:'fpm4_clients',pw:'fpm4_pw',api:'fpm4_api'};
+function ls(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lss(k,v){try{localStorage.setItem(k,v);}catch(e){}}
+function lj(k){try{return JSON.parse(ls(k));}catch(e){return null;}}
+function persist(){lss(K.p,JSON.stringify(projects));lss(K.t,JSON.stringify(todos));lss(K.c,JSON.stringify(clients));}
+
+let projects=lj(K.p)||[];
+let todos=lj(K.t)||[];
+let clients=lj(K.c)||[];
+let nextId={p:Math.max(0,...projects.map(x=>x.id))+1,t:Math.max(0,...todos.map(x=>x.id))+1,c:Math.max(0,...clients.map(x=>x.id))+1};
 let editingProjectId=null;
 let currentTab='kanban';
-
 const todayStr=new Date().toISOString().split('T')[0];
 function isOverdue(d){return d&&d<todayStr;}
 
-// ── TABS ──────────────────────────────────────────────
+// ════════════════════════════════════════════════════
+// PASSWORD
+// ════════════════════════════════════════════════════
+const DEFAULT_PW='0000';
+function hashPW(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return h.toString(36);}
+function getPWHash(){return ls(K.pw)||hashPW(DEFAULT_PW);}
+
+function initLock(){
+  const stored=ls(K.pw);
+  if(!stored){
+    document.getElementById('lock-sub').textContent='首次使用，預設密碼：0000';
+    document.getElementById('lock-setup-hint').innerHTML='請解鎖後到「設定」修改密碼';
+  }
+  document.getElementById('lock-input').focus();
+}
+
+function tryUnlock(){
+  const val=document.getElementById('lock-input').value;
+  if(hashPW(val)===getPWHash()){
+    document.getElementById('lock-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    document.getElementById('fab-btn').style.display='flex';
+    document.getElementById('api-url-input').value=ls(K.api)||'';
+    switchTab('kanban',0);
+    autoSync();
+  } else {
+    document.getElementById('lock-err').textContent='密碼錯誤，請再試一次';
+    document.getElementById('lock-input').value='';
+    document.getElementById('lock-input').focus();
+    setTimeout(()=>document.getElementById('lock-err').textContent='',2000);
+  }
+}
+
+function lockApp(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('fab-btn').style.display='none';
+  document.getElementById('lock-screen').style.display='flex';
+  document.getElementById('lock-input').value='';
+  document.getElementById('lock-input').focus();
+}
+
+function openChangePassword(){
+  ['pw-old','pw-new','pw-confirm'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pw-err').textContent='';
+  document.getElementById('sheet-pw').classList.add('open');
+}
+
+function changePassword(){
+  const old=document.getElementById('pw-old').value;
+  const nw=document.getElementById('pw-new').value;
+  const cf=document.getElementById('pw-confirm').value;
+  const err=document.getElementById('pw-err');
+  if(hashPW(old)!==getPWHash()){err.textContent='目前密碼錯誤';return;}
+  if(nw.length<4){err.textContent='新密碼至少 4 字元';return;}
+  if(nw!==cf){err.textContent='兩次輸入不一致';return;}
+  lss(K.pw,hashPW(nw));
+  closeSheet('sheet-pw');
+  alert('密碼已更新');
+}
+
+// ════════════════════════════════════════════════════
+// GOOGLE SHEETS SYNC
+// ════════════════════════════════════════════════════
+function getApiUrl(){return (ls(K.api)||'').trim();}
+function saveApiUrl(){lss(K.api,document.getElementById('api-url-input').value.trim());}
+
+function setSyncState(state,msg){
+  const dot=document.getElementById('sync-dot');
+  const txt=document.getElementById('sync-status-text');
+  dot.className='sync-dot '+(state==='ok'?'ok':state==='err'?'err':'loading');
+  if(txt)txt.textContent=msg||'';
+}
+
+async function syncNow(){
+  const url=getApiUrl();
+  if(!url){setSyncState('err','未設定 API 網址');return;}
+  setSyncState('loading','同步中...');
+  try {
+    // push local data
+    const res=await fetch(url,{
+      method:'POST',
+      body:JSON.stringify({action:'saveAll',projects,todos,clients}),
+    });
+    const data=await res.json();
+    if(!data.ok)throw new Error(data.error||'Sync failed');
+    // pull latest
+    const res2=await fetch(url+'?action=getAll');
+    const data2=await res2.json();
+    if(data2.ok&&data2.data){
+      projects=data2.data.projects||projects;
+      todos=data2.data.todos||todos;
+      clients=data2.data.clients||clients;
+      persist();
+      refreshCurrentView();
+    }
+    const now=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    setSyncState('ok','上次同步 '+now);
+  } catch(e){
+    setSyncState('err','同步失敗：'+e.message);
+  }
+}
+
+async function autoSync(){
+  const url=getApiUrl();
+  if(!url)return;
+  setSyncState('loading','連線中...');
+  try {
+    const res=await fetch(url+'?action=getAll');
+    const data=await res.json();
+    if(data.ok&&data.data){
+      projects=data.data.projects||projects;
+      todos=data.data.todos||todos;
+      clients=data.data.clients||clients;
+      persist();
+      refreshCurrentView();
+    }
+    const now=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    setSyncState('ok','上次同步 '+now);
+  } catch(e){
+    setSyncState('err','離線模式');
+  }
+}
+
+// ════════════════════════════════════════════════════
+// EXCEL / CSV IMPORT
+// ════════════════════════════════════════════════════
+const COL_MAP={'客戶名稱':'client','案件名稱':'name','報價金額':'amount','案件狀態':'status','備註':'note_import','收款日':'paidDate','發票日':'invoice'};
+
+async function handleImport(e){
+  const file=e.target.files[0];
+  if(!file)return;
+  const result=document.getElementById('import-result');
+  result.textContent='讀取中...';
+  result.style.color='var(--text2)';
+  try {
+    let rows=[];
+    if(file.name.endsWith('.csv')){
+      const text=await file.text();
+      const lines=text.split('\n').filter(l=>l.trim());
+      const headers=lines[0].split(',').map(h=>h.replace(/^"|"$/g,'').trim());
+      rows=lines.slice(1).map(line=>{
+        const vals=line.split(',').map(v=>v.replace(/^"|"$/g,'').trim());
+        const obj={};
+        headers.forEach((h,i)=>obj[h]=vals[i]||'');
+        return obj;
+      });
+    } else {
+      const buf=await file.arrayBuffer();
+      const wb=XLSX.read(buf,{type:'array',cellDates:true});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+    }
+    let added=0,skipped=0;
+    rows.forEach(row=>{
+      const name=(row['案件名稱']||'').toString().trim();
+      if(!name){skipped++;return;}
+      if(projects.find(p=>p.name===name)){skipped++;return;}
+      const rawDate=v=>{ if(!v)return ''; if(v instanceof Date){return v.toISOString().split('T')[0];} const s=String(v).trim(); if(/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}$/.test(s))return s.replace(/\//g,'-'); return ''; };
+      projects.push({
+        id:nextId.p++,
+        name,
+        client:(row['客戶名稱']||'').toString().trim(),
+        type:'other',
+        amount:parseFloat((row['報價金額']||'').toString().replace(/[^0-9.]/g,''))||0,
+        status:(row['案件狀態']||'詢價').toString().trim(),
+        due:'',proposal:'',revision:'',
+        invoice:rawDate(row['發票日']),
+        deposit:'',final:'',
+        paidDate:rawDate(row['收款日']),
+        notes:(row['備註']&&row['備註'].toString().trim())?[{ts:new Date().toLocaleString('zh-TW'),text:row['備註'].toString().trim()}]:[],
+      });
+      // auto-add client
+      const cname=(row['客戶名稱']||'').toString().trim();
+      if(cname&&!clients.find(c=>c.name===cname)){
+        clients.push({id:nextId.c++,name:cname,type:'',contact:''});
+      }
+      added++;
+    });
+    persist();
+    result.textContent=`匯入完成：新增 ${added} 筆，略過 ${skipped} 筆（重複或空白）`;
+    result.style.color='var(--green)';
+    if(currentTab==='kanban')renderKanban();
+    if(currentTab==='clients')renderClients();
+    e.target.value='';
+  } catch(err){
+    result.textContent='匯入失敗：'+err.message;
+    result.style.color='var(--red)';
+  }
+}
+
+// ════════════════════════════════════════════════════
+// TABS
+// ════════════════════════════════════════════════════
 function switchTab(t,idx){
   currentTab=t;
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('v-'+t).classList.add('active');
   document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',i===idx));
   const fab=document.getElementById('fab-btn');
-  fab.style.display=(t==='finance')?'none':'flex';
+  fab.style.display=(t==='finance'||t==='settings')?'none':'flex';
   if(t==='kanban')renderKanban();
   if(t==='calendar')renderCalendar();
   if(t==='todo')renderTodo();
@@ -429,150 +678,134 @@ function switchTab(t,idx){
   if(t==='clients')renderClients();
 }
 
-function openAdd(){
-  if(currentTab==='clients')openAddClient();
-  else openAddProject();
-}
+function refreshCurrentView(){switchTab(currentTab,[0,1,2,3,4,5][['kanban','calendar','todo','finance','clients','settings'].indexOf(currentTab)]);}
+function openAdd(){if(currentTab==='clients')openAddClient();else openAddProject();}
 
-// ── KANBAN ───────────────────────────────────────────
+// ════════════════════════════════════════════════════
+// KANBAN
+// ════════════════════════════════════════════════════
 function renderKanban(){
   const list=document.getElementById('kanban-list');
   list.innerHTML='';
   STATUSES.forEach(status=>{
     const items=projects.filter(p=>p.status===status);
-    if(items.length===0&&status==='詢價'){}
     const sec=document.createElement('div');
     sec.innerHTML=`<div class="sec-head"><span class="sec-title">${status}</span><span class="sec-count">${items.length}</span></div>`;
     items.forEach(p=>{
       const od=isOverdue(p.due)&&status!=='已收款';
       const d=document.createElement('div');
       d.className='card'+(od?' overdue':'');
-      d.innerHTML=`<div class="card-name">${p.name}</div><div class="card-sub">${p.client}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]}">${TAG_LABEL[p.type]}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}`;
+      d.innerHTML=`<div class="card-name">${esc(p.name)}</div><div class="card-sub">${esc(p.client)}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]||'tag-other'}">${TAG_LABEL[p.type]||'其他'}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}`;
       d.onclick=()=>openEditProject(p.id);
       sec.appendChild(d);
     });
-    const addBtn=document.createElement('button');
-    addBtn.style.cssText='width:100%;padding:9px;border:0.5px dashed var(--border2);border-radius:var(--radius);background:none;color:var(--text3);font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:6px;';
-    addBtn.textContent='+ 新增案件';
-    addBtn.onclick=()=>openAddProject(status);
-    sec.appendChild(addBtn);
+    const btn=document.createElement('button');
+    btn.className='add-row-btn';btn.textContent='+ 新增案件';
+    btn.onclick=()=>openAddProject(status);
+    sec.appendChild(btn);
     list.appendChild(sec);
   });
 }
 
-// ── CALENDAR ─────────────────────────────────────────
-let calYear=new Date().getFullYear();
-let calMonth=new Date().getMonth();
-let calSelectedDay=null;
+// ════════════════════════════════════════════════════
+// CALENDAR
+// ════════════════════════════════════════════════════
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),calSel=null;
 
 function getCalEvents(){
   const evs=[];
   projects.forEach(p=>{
-    if(p.due) evs.push({date:p.due,type:'deadline',title:p.name,sub:p.client,cls:'ev-deadline'});
-    if(p.deposit) evs.push({date:p.deposit,type:'payment',title:'收頭款：'+p.name,sub:p.client,cls:'ev-payment'});
-    if(p.final) evs.push({date:p.final,type:'payment',title:'收尾款：'+p.name,sub:p.client,cls:'ev-payment'});
-    if(p.paidDate) evs.push({date:p.paidDate,type:'payment',title:'已收款：'+p.name,sub:p.client,cls:'ev-payment'});
-    if(p.proposal) evs.push({date:p.proposal,type:'proposal',title:'提案：'+p.name,sub:p.client,cls:'ev-proposal'});
-    if(p.invoice) evs.push({date:p.invoice,type:'invoice',title:'開立發票：'+p.name,sub:p.client,cls:'ev-invoice'});
-    if(p.revision) evs.push({date:p.revision,type:'revision',title:'調整期限：'+p.name,sub:p.client,cls:'ev-revision'});
+    if(p.due)evs.push({date:p.due,type:'deadline',title:esc(p.name),sub:esc(p.client),cls:'ev-deadline'});
+    if(p.deposit)evs.push({date:p.deposit,type:'payment',title:'收頭款：'+esc(p.name),sub:esc(p.client),cls:'ev-payment'});
+    if(p.final)evs.push({date:p.final,type:'payment',title:'收尾款：'+esc(p.name),sub:esc(p.client),cls:'ev-payment'});
+    if(p.paidDate)evs.push({date:p.paidDate,type:'payment',title:'已收款：'+esc(p.name),sub:esc(p.client),cls:'ev-payment'});
+    if(p.proposal)evs.push({date:p.proposal,type:'proposal',title:'提案：'+esc(p.name),sub:esc(p.client),cls:'ev-proposal'});
+    if(p.invoice)evs.push({date:p.invoice,type:'invoice',title:'開立發票：'+esc(p.name),sub:esc(p.client),cls:'ev-invoice'});
+    if(p.revision)evs.push({date:p.revision,type:'revision',title:'調整期限：'+esc(p.name),sub:esc(p.client),cls:'ev-revision'});
   });
-  todos.filter(t=>t.due&&!t.done).forEach(t=>{
-    evs.push({date:t.due,type:'todo',title:t.text,sub:t.project||'',cls:'ev-todo'});
-  });
+  todos.filter(t=>t.due&&!t.done).forEach(t=>evs.push({date:t.due,type:'todo',title:esc(t.text),sub:esc(t.project||''),cls:'ev-todo'}));
   return evs;
 }
 
-const DOT_CLASS={deadline:'dot-deadline',payment:'dot-payment',proposal:'dot-proposal',invoice:'dot-invoice',revision:'dot-revision',todo:'dot-todo'};
-const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-const DAYS=['日','一','二','三','四','五','六'];
-
 function renderCalendar(){
-  const label=document.getElementById('cal-month-label');
-  label.textContent=`${calYear} 年 ${MONTHS[calMonth]}`;
+  document.getElementById('cal-month-label').textContent=`${calYear} 年 ${MONTHS[calMonth]}`;
   const grid=document.getElementById('cal-grid');
   grid.innerHTML='';
   DAYS.forEach(d=>{const el=document.createElement('div');el.className='cal-dow';el.textContent=d;grid.appendChild(el);});
-  const evs=getCalEvents();
-  const evMap={};
+  const evs=getCalEvents(),evMap={};
   evs.forEach(e=>{if(!evMap[e.date])evMap[e.date]=[];evMap[e.date].push(e);});
   const first=new Date(calYear,calMonth,1).getDay();
-  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const prevDays=new Date(calYear,calMonth,0).getDate();
-  const total=Math.ceil((first+daysInMonth)/7)*7;
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const prev=new Date(calYear,calMonth,0).getDate();
+  const total=Math.ceil((first+dim)/7)*7;
   for(let i=0;i<total;i++){
-    let day,month,year,otherMonth=false;
-    if(i<first){day=prevDays-first+i+1;month=calMonth-1;year=calYear;if(month<0){month=11;year--;}otherMonth=true;}
-    else if(i>=first+daysInMonth){day=i-first-daysInMonth+1;month=calMonth+1;year=calYear;if(month>11){month=0;year++;}otherMonth=true;}
+    let day,month,year,other=false;
+    if(i<first){day=prev-first+i+1;month=calMonth-1;year=calYear;if(month<0){month=11;year--;}other=true;}
+    else if(i>=first+dim){day=i-first-dim+1;month=calMonth+1;year=calYear;if(month>11){month=0;year++;}other=true;}
     else{day=i-first+1;month=calMonth;year=calYear;}
-    const dateStr=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-    const isToday=dateStr===todayStr;
-    const isSel=dateStr===calSelectedDay;
+    const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
     const cell=document.createElement('div');
-    cell.className='cal-day'+(otherMonth?' other-month':'')+(isToday?' today':'')+(isSel?' selected':'');
-    if(isSel)cell.style.background='var(--bg3)';
-    const num=document.createElement('div');
-    num.className='cal-daynum';
-    num.textContent=day;
-    cell.appendChild(num);
-    const dots=document.createElement('div');
-    dots.className='cal-dots';
-    (evMap[dateStr]||[]).slice(0,4).forEach(e=>{const dot=document.createElement('div');dot.className='dot '+DOT_CLASS[e.type];dots.appendChild(dot);});
+    cell.className='cal-day'+(other?' other-month':'')+(ds===todayStr?' today':'')+(ds===calSel?' selected':'');
+    const num=document.createElement('div');num.className='cal-daynum';num.textContent=day;cell.appendChild(num);
+    const dots=document.createElement('div');dots.className='cal-dots';
+    (evMap[ds]||[]).slice(0,5).forEach(e=>{const dot=document.createElement('div');dot.className='dot '+DOT_CLASS[e.type];dots.appendChild(dot);});
     cell.appendChild(dots);
-    cell.onclick=()=>{calSelectedDay=dateStr;renderCalendar();renderSelectedEvents(dateStr,evMap[dateStr]||[]);};
+    cell.onclick=()=>{calSel=ds;renderCalendar();renderSelEvents(ds,evMap[ds]||[]);};
     grid.appendChild(cell);
   }
-  renderMonthEvents(evs.filter(e=>{const d=e.date;return d>=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`&&d<=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(daysInMonth).padStart(2,'0')}`;}));
-  if(calSelectedDay&&evMap[calSelectedDay])renderSelectedEvents(calSelectedDay,evMap[calSelectedDay]);
+  const monthEvs=evs.filter(e=>{const d=e.date;return d>=`${calYear}-${String(calMonth+1).padStart(2,'0')}-01`&&d<=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(dim).padStart(2,'0')}`;});
+  renderMonthEvents(monthEvs);
+  if(calSel&&evMap[calSel])renderSelEvents(calSel,evMap[calSel]);
 }
 
-function renderSelectedEvents(date,evs){
+function renderSelEvents(date,evs){
   const el=document.getElementById('cal-selected-events');
   if(!evs.length){el.innerHTML='';return;}
   const d=new Date(date+'T00:00:00');
-  el.innerHTML=`<div class="ev-month-title">${d.getMonth()+1}/${d.getDate()} 節點</div>`+evs.map(e=>`<div class="event-item ${e.cls}"><div class="event-info"><div class="event-title">${e.title}</div>${e.sub?`<div class="event-sub">${e.sub}</div>`:''}</div></div>`).join('');
+  el.innerHTML=`<div class="ev-section-title">${d.getMonth()+1}/${d.getDate()} 節點</div>`+evs.map(e=>`<div class="event-item ${e.cls}"><div class="event-info"><div class="event-title">${e.title}</div>${e.sub?`<div class="event-sub">${e.sub}</div>`:''}</div></div>`).join('');
 }
 
 function renderMonthEvents(evs){
   const el=document.getElementById('cal-month-events');
-  if(!evs.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;">本月無節點</div>';return;}
+  if(!evs.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0;">本月無節點</div>';return;}
   evs.sort((a,b)=>a.date.localeCompare(b.date));
   el.innerHTML=evs.map(e=>{
     const d=new Date(e.date+'T00:00:00');
     const od=e.date<todayStr;
-    return `<div class="event-item ${e.cls}"><div class="event-date" style="${od?'color:#c0392b;':''}">${d.getMonth()+1}/${d.getDate()}</div><div class="event-info"><div class="event-title">${e.title}</div>${e.sub?`<div class="event-sub">${e.sub}</div>`:''}</div></div>`;
+    return `<div class="event-item ${e.cls}"><div class="event-date" style="${od?'color:var(--red);':''}">${d.getMonth()+1}/${d.getDate()}</div><div class="event-info"><div class="event-title">${e.title}</div>${e.sub?`<div class="event-sub">${e.sub}</div>`:''}</div></div>`;
   }).join('');
 }
 
-function calPrev(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;calSelectedDay=null;renderCalendar();}
-function calNext(){if(calMonth===11){calMonth=0;calYear++;}else calMonth++;calSelectedDay=null;renderCalendar();}
-function calGoToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSelectedDay=todayStr;renderCalendar();}
+function calPrev(){if(calMonth===0){calMonth=11;calYear--;}else calMonth--;calSel=null;renderCalendar();}
+function calNext(){if(calMonth===11){calMonth=0;calYear++;}else calMonth++;calSel=null;renderCalendar();}
+function calGoToday(){calYear=new Date().getFullYear();calMonth=new Date().getMonth();calSel=todayStr;renderCalendar();}
 
-// ── TODO ─────────────────────────────────────────────
+// ════════════════════════════════════════════════════
+// TODO
+// ════════════════════════════════════════════════════
 function renderTodo(){
   const sel=document.getElementById('todo-project');
-  sel.innerHTML='<option value="">無關聯</option>'+projects.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  sel.innerHTML='<option value="">無關聯</option>'+projects.map(p=>`<option value="${esc(p.name)}">${esc(p.name)}</option>`).join('');
   const groups={};
   todos.forEach(t=>{const g=t.project||'其他';if(!groups[g])groups[g]=[];groups[g].push(t);});
   const list=document.getElementById('todo-list');
   list.innerHTML='';
+  if(!todos.length){list.innerHTML='<div style="color:var(--text3);font-size:14px;padding:20px 0;text-align:center;">還沒有待辦事項</div>';return;}
   Object.entries(groups).forEach(([g,items])=>{
-    const sec=document.createElement('div');
-    sec.style.marginBottom='16px';
-    sec.innerHTML=`<div class="sec-head"><span class="sec-title">${g}</span></div>`;
+    const sec=document.createElement('div');sec.style.marginBottom='16px';
+    sec.innerHTML=`<div class="sec-head"><span class="sec-title">${esc(g)}</span></div>`;
     const wrap=document.createElement('div');
     items.forEach(t=>{
       const od=isOverdue(t.due)&&!t.done;
-      const row=document.createElement('div');
-      row.className='todo-item';
-      row.innerHTML=`<div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id})"></div><div style="flex:1;"><div class="todo-text${t.done?' done':''}">${t.text}</div>${t.due?`<div class="todo-due${od?' overdue':''}">${od?'逾期 ':'截止 '}${t.due}</div>`:''}</div><div class="todo-del" onclick="deleteTodo(${t.id})">×</div>`;
+      const row=document.createElement('div');row.className='todo-item';
+      row.innerHTML=`<div class="todo-check${t.done?' done':''}" onclick="toggleTodo(${t.id})"></div><div style="flex:1;"><div class="todo-text${t.done?' done':''}">${esc(t.text)}</div>${t.due?`<div class="todo-due${od?' overdue':''}">${od?'逾期 ':'截止 '}${t.due}</div>`:''}</div><div class="todo-del" onclick="deleteTodo(${t.id})">×</div>`;
       wrap.appendChild(row);
     });
-    sec.appendChild(wrap);
-    list.appendChild(sec);
+    sec.appendChild(wrap);list.appendChild(sec);
   });
 }
 
-function toggleTodo(id){const t=todos.find(x=>x.id===id);if(t){t.done=!t.done;persist();renderTodo();if(currentTab==='calendar')renderCalendar();}}
+function toggleTodo(id){const t=todos.find(x=>x.id===id);if(t){t.done=!t.done;persist();renderTodo();}}
 function deleteTodo(id){if(confirm('刪除此待辦？')){todos=todos.filter(x=>x.id!==id);persist();renderTodo();}}
 function addTodo(){
   const text=document.getElementById('new-todo').value.trim();
@@ -582,7 +815,9 @@ function addTodo(){
   persist();renderTodo();
 }
 
-// ── FINANCE ──────────────────────────────────────────
+// ════════════════════════════════════════════════════
+// FINANCE
+// ════════════════════════════════════════════════════
 function renderFinance(){
   const total=projects.reduce((s,p)=>s+p.amount,0);
   const paid=projects.filter(p=>p.status==='已收款').reduce((s,p)=>s+p.amount,0);
@@ -593,44 +828,48 @@ function renderFinance(){
     <div class="stat-card"><div class="stat-label">已收款</div><div class="stat-val green">$${paid.toLocaleString()}</div></div>
     <div class="stat-card"><div class="stat-label">已開發票</div><div class="stat-val purple">$${invoiced.toLocaleString()}</div></div>
     <div class="stat-card"><div class="stat-label">進行中</div><div class="stat-val amber">$${wip.toLocaleString()}</div></div>`;
-  document.getElementById('finance-body').innerHTML=projects.map(p=>{
+  document.getElementById('finance-body').innerHTML=projects.length?projects.map(p=>{
     const od=isOverdue(p.due)&&p.status!=='已收款';
-    return `<tr onclick="openEditProject(${p.id})" style="cursor:pointer;"><td>${p.name}</td><td>${p.client}</td><td>$${p.amount.toLocaleString()}</td><td style="${od?'color:#c0392b;font-weight:600;':''}">${p.due||'—'}</td><td><span class="pill ${PILL_MAP[p.status]||'s-quote'}">${p.status}</span></td></tr>`;
-  }).join('');
+    return `<tr onclick="openEditProject(${p.id})"><td>${esc(p.name)}</td><td>${esc(p.client)}</td><td>$${p.amount.toLocaleString()}</td><td style="${od?'color:var(--red);font-weight:600;':''}">${p.due||'—'}</td><td><span class="pill ${PILL_MAP[p.status]||'s-quote'}">${p.status}</span></td></tr>`;
+  }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;">還沒有案件</td></tr>';
 }
 
-// ── CLIENTS ──────────────────────────────────────────
+// ════════════════════════════════════════════════════
+// CLIENTS
+// ════════════════════════════════════════════════════
 function renderClients(){
   const list=document.getElementById('client-list');
+  if(!clients.length){list.innerHTML='<div style="color:var(--text3);font-size:14px;padding:20px 0;text-align:center;">還沒有客戶資料</div>';return;}
   list.innerHTML=clients.map((c,i)=>{
     const count=projects.filter(p=>p.client===c.name).length;
     const total=projects.filter(p=>p.client===c.name).reduce((s,p)=>s+p.amount,0);
-    return `<div class="client-card"><div class="client-top"><div class="avatar ${AVCOLORS[i%4]}">${c.name.slice(0,2)}</div><div><div class="client-name">${c.name}</div><div class="client-type">${c.type}</div></div></div><div class="client-row"><span>案件數</span><span>${count} 件</span></div><div class="client-row"><span>累計金額</span><span>$${total.toLocaleString()}</span></div><div class="client-row"><span>聯絡</span><span style="font-size:12px;font-weight:400;">${c.contact}</span></div></div>`;
+    return `<div class="client-card"><div class="client-top"><div class="avatar ${AVCOLORS[i%4]}">${c.name.slice(0,2)}</div><div><div class="client-name">${esc(c.name)}</div><div class="client-type">${esc(c.type)}</div></div></div><div class="client-row"><span>案件數</span><span>${count} 件</span></div><div class="client-row"><span>累計金額</span><span>$${total.toLocaleString()}</span></div><div class="client-row"><span>聯絡</span><span style="font-size:12px;font-weight:400;">${esc(c.contact)}</span></div></div>`;
   }).join('');
 }
 
-// ── PROJECT SHEET ─────────────────────────────────────
+// ════════════════════════════════════════════════════
+// PROJECT SHEET
+// ════════════════════════════════════════════════════
 function openAddProject(defaultStatus){
   editingProjectId=null;
-  document.getElementById('sheet-project-title').textContent='新增案件';
-  document.getElementById('sheet-project-save').textContent='新增';
+  document.getElementById('spt').textContent='新增案件';
+  document.getElementById('sps').textContent='新增';
   const sel=document.getElementById('m-pclient');
-  sel.innerHTML=clients.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  sel.innerHTML='<option value="">（選擇客戶）</option>'+clients.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
   ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-ppaiddate','m-pnote'].forEach(id=>document.getElementById(id).value='');
-  if(defaultStatus)document.getElementById('m-pstatus').value=defaultStatus;
-  else document.getElementById('m-pstatus').value='詢價';
+  document.getElementById('m-pstatus').value=defaultStatus||'詢價';
   document.getElementById('notes-log-wrap').style.display='none';
-  document.getElementById('delete-project-wrap').style.display='none';
+  document.getElementById('del-project-wrap').style.display='none';
   document.getElementById('sheet-project').classList.add('open');
 }
 
 function openEditProject(id){
   editingProjectId=id;
   const p=projects.find(x=>x.id===id);if(!p)return;
-  document.getElementById('sheet-project-title').textContent='編輯案件';
-  document.getElementById('sheet-project-save').textContent='儲存';
+  document.getElementById('spt').textContent='編輯案件';
+  document.getElementById('sps').textContent='儲存';
   const sel=document.getElementById('m-pclient');
-  sel.innerHTML=clients.map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  sel.innerHTML='<option value="">（選擇客戶）</option>'+clients.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
   sel.value=p.client;
   document.getElementById('m-pname').value=p.name;
   document.getElementById('m-ptype').value=p.type;
@@ -645,11 +884,9 @@ function openEditProject(id){
   document.getElementById('m-ppaiddate').value=p.paidDate||'';
   document.getElementById('m-pnote').value='';
   const notes=p.notes||[];
-  if(notes.length){
-    document.getElementById('notes-log-wrap').style.display='block';
-    document.getElementById('notes-log').innerHTML=notes.slice().reverse().map(n=>`<div class="note-entry"><div class="note-ts">${n.ts}</div><div class="note-text">${n.text}</div></div>`).join('');
-  }else{document.getElementById('notes-log-wrap').style.display='none';}
-  document.getElementById('delete-project-wrap').style.display='block';
+  if(notes.length){document.getElementById('notes-log-wrap').style.display='block';document.getElementById('notes-log').innerHTML=notes.slice().reverse().map(n=>`<div class="note-entry"><div class="note-ts">${n.ts}</div><div class="note-text">${esc(n.text)}</div></div>`).join('');}
+  else document.getElementById('notes-log-wrap').style.display='none';
+  document.getElementById('del-project-wrap').style.display='block';
   document.getElementById('sheet-project').classList.add('open');
 }
 
@@ -658,19 +895,7 @@ function saveProject(){
   if(!name)return;
   const noteText=document.getElementById('m-pnote').value.trim();
   const ts=new Date().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  const data={
-    name,client:document.getElementById('m-pclient').value,
-    type:document.getElementById('m-ptype').value,
-    amount:parseInt(document.getElementById('m-pamount').value)||0,
-    status:document.getElementById('m-pstatus').value,
-    due:document.getElementById('m-pdue').value,
-    proposal:document.getElementById('m-pproposal').value,
-    revision:document.getElementById('m-prevision').value,
-    invoice:document.getElementById('m-pinvoice').value,
-    deposit:document.getElementById('m-pdeposit').value,
-    final:document.getElementById('m-pfinal').value,
-    paidDate:document.getElementById('m-ppaiddate').value,
-  };
+  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,final:document.getElementById('m-pfinal').value,paidDate:document.getElementById('m-ppaiddate').value};
   if(editingProjectId){
     const p=projects.find(x=>x.id===editingProjectId);
     if(p){
@@ -683,26 +908,24 @@ function saveProject(){
       if(noteText)p.notes.push({ts,text:noteText});
       if(changes.length)p.notes.push({ts,text:'修改：'+changes.join('；')});
     }
-  }else{
-    const notes=noteText?[{ts,text:noteText}]:[];
-    projects.push({id:nextId.p++,...data,notes});
+  } else {
+    projects.push({id:nextId.p++,...data,notes:noteText?[{ts,text:noteText}]:[]});
+    // auto-add client
+    if(data.client&&!clients.find(c=>c.name===data.client))
+      clients.push({id:nextId.c++,name:data.client,type:'',contact:''});
   }
-  closeSheet('sheet-project');persist();
-  if(currentTab==='kanban')renderKanban();
-  if(currentTab==='finance')renderFinance();
-  if(currentTab==='calendar')renderCalendar();
+  closeSheet('sheet-project');persist();refreshCurrentView();
 }
 
 function deleteProject(){
   if(!confirm('確定刪除此案件？'))return;
   projects=projects.filter(x=>x.id!==editingProjectId);
-  closeSheet('sheet-project');persist();
-  if(currentTab==='kanban')renderKanban();
-  if(currentTab==='finance')renderFinance();
-  if(currentTab==='calendar')renderCalendar();
+  closeSheet('sheet-project');persist();refreshCurrentView();
 }
 
-// ── CLIENT SHEET ──────────────────────────────────────
+// ════════════════════════════════════════════════════
+// CLIENT SHEET
+// ════════════════════════════════════════════════════
 function openAddClient(){
   ['m-cname','m-ctype','m-ccontact'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('sheet-client').classList.add('open');
@@ -710,39 +933,57 @@ function openAddClient(){
 function saveClient(){
   const name=document.getElementById('m-cname').value.trim();
   if(!name)return;
-  clients.push({id:nextId.c++,name,type:document.getElementById('m-ctype').value,contact:document.getElementById('m-ccontact').value});
+  if(!clients.find(c=>c.name===name))
+    clients.push({id:nextId.c++,name,type:document.getElementById('m-ctype').value,contact:document.getElementById('m-ccontact').value});
   closeSheet('sheet-client');persist();renderClients();
 }
 
-// ── SHEET CONTROL ─────────────────────────────────────
-function closeSheet(id){document.getElementById(id).classList.remove('open');}
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
-
-// ── TAX CALC ─────────────────────────────────────────
+// ════════════════════════════════════════════════════
+// TAX
+// ════════════════════════════════════════════════════
 function getRate(){return parseInt(document.getElementById('tax-rate').value)/100;}
-function fmtM(v){return isNaN(v)||v===''?'—':'$'+Math.round(v).toLocaleString();}
+function fmtM(v){return isNaN(v)?'—':'$'+Math.round(v).toLocaleString();}
 function calcFromInc(){const inc=parseFloat(document.getElementById('tax-inc').value);if(isNaN(inc)){clearTax();return;}const r=getRate();const exc=inc/(1+r);document.getElementById('tax-exc').value='';document.getElementById('r-exc').textContent=fmtM(exc);document.getElementById('r-tax').textContent=fmtM(inc-exc);document.getElementById('r-inc').textContent=fmtM(inc);}
 function calcFromExc(){const exc=parseFloat(document.getElementById('tax-exc').value);if(isNaN(exc)){clearTax();return;}const r=getRate();const tax=exc*r;document.getElementById('tax-inc').value='';document.getElementById('r-exc').textContent=fmtM(exc);document.getElementById('r-tax').textContent=fmtM(tax);document.getElementById('r-inc').textContent=fmtM(exc+tax);}
 function recalcTax(){if(document.getElementById('tax-inc').value)calcFromInc();else if(document.getElementById('tax-exc').value)calcFromExc();}
 function clearTax(){['r-exc','r-tax','r-inc'].forEach(id=>document.getElementById(id).textContent='—');}
 
-// ── EXPORT CSV ───────────────────────────────────────
+// ════════════════════════════════════════════════════
+// EXPORT
+// ════════════════════════════════════════════════════
 function exportCSV(){
   const rows=[['案件名稱','客戶','類型','報價(TWD)','截止日','提案日','調整期限','發票日','收頭款','收尾款','收款日','收款狀態']];
-  projects.forEach(p=>rows.push([p.name,p.client,TAG_LABEL[p.type],p.amount,p.due||'',p.proposal||'',p.revision||'',p.invoice||'',p.deposit||'',p.final||'',p.paidDate||'',p.status]));
+  projects.forEach(p=>rows.push([p.name,p.client,TAG_LABEL[p.type]||'其他',p.amount,p.due||'',p.proposal||'',p.revision||'',p.invoice||'',p.deposit||'',p.final||'',p.paidDate||'',p.status]));
   const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='接案紀錄.csv';a.click();
-  URL.revokeObjectURL(url);
+  const a=document.createElement('a');a.href=url;a.download='接案紀錄.csv';a.click();URL.revokeObjectURL(url);
 }
 
-// ── PWA ───────────────────────────────────────────────
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+function exportJSON(){
+  const blob=new Blob([JSON.stringify({projects,todos,clients},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='接案備份.json';a.click();URL.revokeObjectURL(url);
 }
 
-renderKanban();
+function clearAllData(){
+  if(!confirm('確定清除所有資料？此操作無法復原。'))return;
+  projects=[];todos=[];clients=[];persist();refreshCurrentView();
+}
+
+// ════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function closeSheet(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.getElementById('lock-input').addEventListener('keydown',e=>{if(e.key==='Enter')tryUnlock();});
+
+// ════════════════════════════════════════════════════
+// PWA + INIT
+// ════════════════════════════════════════════════════
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'));
+initLock();
 </script>
 </body>
 </html>
