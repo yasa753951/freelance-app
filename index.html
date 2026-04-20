@@ -6,20 +6,21 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="接案管理"/>
-<meta name="theme-color" content="#1a1a1a"/>
+<meta name="theme-color" content="#211c16"/>
 <link rel="manifest" href="manifest.json"/>
 <title>接案管理</title>
 <style>
 :root{
-  --bg:#fff;--bg2:#f5f5f3;--bg3:#eeedea;
-  --text:#1a1a1a;--text2:#666660;--text3:#aaa9a4;
-  --border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.16);
+  --bg:#faf7f2;--bg2:#f0ebe2;--bg3:#e6dfd4;
+  --text:#2c2318;--text2:#7a6a57;--text3:#b5a48f;
+  --border:rgba(100,75,45,0.1);--border2:rgba(100,75,45,0.2);
   --radius:10px;--radius-lg:14px;
   --safe-b:env(safe-area-inset-bottom,0px);
-  --green:#0a7c5c;--purple:#4a3db0;--amber:#8a5200;--red:#c0392b;
+  --accent:#8b5e3c;--accent-bg:#f5ede4;
+  --green:#2d7a4f;--purple:#5c4da0;--amber:#8a5200;--red:#b33a2a;
 }
 @media(prefers-color-scheme:dark){
-  :root{--bg:#1a1a1a;--bg2:#252525;--bg3:#2e2e2e;--text:#f0efe9;--text2:#999890;--text3:#666560;--border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.16);}
+  :root{--bg:#211c16;--bg2:#2d2620;--bg3:#3a312a;--text:#f0e8dc;--text2:#a0896f;--text3:#5e4e3c;--border:rgba(200,160,110,0.1);--border2:rgba(200,160,110,0.2);--accent:#c4845a;--accent-bg:#3a2a1e;}
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);font-size:15px;overflow:hidden;}
@@ -29,7 +30,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 #lock-screen h2{font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px;}
 #lock-screen p{font-size:14px;color:var(--text2);margin-bottom:32px;}
 #lock-screen input{width:100%;max-width:300px;background:var(--bg2);border:0.5px solid var(--border2);border-radius:12px;padding:14px 16px;font-size:16px;color:var(--text);font-family:inherit;text-align:center;letter-spacing:4px;margin-bottom:12px;}
-#lock-screen button{width:100%;max-width:300px;padding:14px;background:var(--text);color:var(--bg);border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+#lock-screen button{width:100%;max-width:300px;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
 #lock-err{font-size:13px;color:var(--red);min-height:20px;margin-top:4px;text-align:center;}
 .lock-setup{margin-top:24px;font-size:13px;color:var(--text3);text-align:center;}
 .lock-setup span{color:var(--text2);text-decoration:underline;cursor:pointer;}
@@ -80,7 +81,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 .add-row-btn:active{background:var(--bg2);}
 
 /* ── FAB ── */
-.fab{position:fixed;right:18px;bottom:calc(72px + var(--safe-b));width:50px;height:50px;border-radius:50%;background:var(--text);color:var(--bg);border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,0.18);z-index:40;}
+.fab{position:fixed;right:18px;bottom:calc(72px + var(--safe-b));width:50px;height:50px;border-radius:50%;background:var(--accent);color:#fff;border:none;font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 14px rgba(139,94,60,0.35);z-index:40;}
 .fab:active{transform:scale(0.92);}
 
 /* ── PILLS ── */
@@ -199,7 +200,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 .btn{flex:1;padding:13px;border-radius:11px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;border:none;}
 .btn:active{opacity:0.7;}
 .btn-cancel{background:var(--bg2);color:var(--text);}
-.btn-save{background:var(--text);color:var(--bg);}
+.btn-save{background:var(--accent);color:#fff;}
 .btn-danger{background:#fff0ef;color:var(--red);}
 .note-entry{background:var(--bg2);border-radius:8px;padding:8px 10px;margin-bottom:6px;}
 .note-ts{font-size:11px;color:var(--text3);margin-bottom:2px;}
@@ -389,9 +390,26 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
     <div class="form-field"><label>提案日</label><input type="date" id="m-pproposal"/></div>
     <div class="form-field"><label>設計調整期限</label><input type="date" id="m-prevision"/></div>
     <div class="form-field"><label>開立發票日</label><input type="date" id="m-pinvoice"/></div>
-    <div class="form-field"><label>收頭款日</label><input type="date" id="m-pdeposit"/></div>
-    <div class="form-field"><label>收尾款日</label><input type="date" id="m-pfinal"/></div>
-    <div class="form-field"><label>收款日（已收款）</label><input type="date" id="m-ppaiddate"/></div>
+    <div class="form-field">
+      <label>收頭款日</label>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="date" id="m-pdeposit" style="flex:1;"/>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;">
+          <input type="checkbox" id="m-pdeposit-paid" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/>
+          已收
+        </label>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>收尾款日</label>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <input type="date" id="m-pfinal" style="flex:1;"/>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;">
+          <input type="checkbox" id="m-pfinal-paid" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/>
+          已收
+        </label>
+      </div>
+    </div>
     <div class="form-section">備註</div>
     <div class="form-field"><textarea id="m-pnote" placeholder="新增備註..."></textarea></div>
     <div id="notes-log-wrap" style="display:none;">
@@ -412,13 +430,16 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 <div class="overlay" id="sheet-client">
   <div class="sheet">
     <div class="sheet-handle"></div>
-    <div class="sheet-title">新增客戶</div>
+    <div class="sheet-title" id="sct">新增客戶</div>
     <div class="form-field"><label>客戶名稱</label><input type="text" id="m-cname"/></div>
     <div class="form-field"><label>產業類型</label><input type="text" id="m-ctype" placeholder="例：食品、科技..."/></div>
     <div class="form-field"><label>聯絡方式</label><input type="text" id="m-ccontact" placeholder="Email / Line"/></div>
     <div class="btn-row">
       <button class="btn btn-cancel" onclick="closeSheet('sheet-client')">取消</button>
-      <button class="btn btn-save" onclick="saveClient()">新增</button>
+      <button class="btn btn-save" id="scs" onclick="saveClient()">新增</button>
+    </div>
+    <div id="del-client-wrap" style="display:none;margin-top:10px;">
+      <button class="btn btn-danger" style="width:100%;" onclick="deleteClient()">刪除此客戶</button>
     </div>
   </div>
 </div>
@@ -695,7 +716,8 @@ function renderKanban(){
       const od=isOverdue(p.due)&&status!=='已收款';
       const d=document.createElement('div');
       d.className='card'+(od?' overdue':'');
-      d.innerHTML=`<div class="card-name">${esc(p.name)}</div><div class="card-sub">${esc(p.client)}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]||'tag-other'}">${TAG_LABEL[p.type]||'其他'}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}`;
+      const payBadge=(p.deposit||p.final)?`<div style="display:flex;gap:4px;margin-top:5px;">${p.deposit?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.depositPaid?'#d4edda':'var(--bg3)'};color:${p.depositPaid?'#2d7a4f':'var(--text3)'};">頭款${p.depositPaid?'✓':''}</span>`:''}${p.final?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.finalPaid?'#d4edda':'var(--bg3)'};color:${p.finalPaid?'#2d7a4f':'var(--text3)'};">尾款${p.finalPaid?'✓':''}</span>`:''}</div>`:'';
+      d.innerHTML=`<div class="card-name">${esc(p.name)}</div><div class="card-sub">${esc(p.client)}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]||'tag-other'}">${TAG_LABEL[p.type]||'其他'}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}${payBadge}`;
       d.onclick=()=>openEditProject(p.id);
       sec.appendChild(d);
     });
@@ -716,9 +738,8 @@ function getCalEvents(){
   const evs=[];
   projects.forEach(p=>{
     if(p.due)evs.push({date:p.due,type:'deadline',title:esc(p.name),sub:esc(p.client),cls:'ev-deadline'});
-    if(p.deposit)evs.push({date:p.deposit,type:'payment',title:'收頭款：'+esc(p.name),sub:esc(p.client),cls:'ev-payment'});
-    if(p.final)evs.push({date:p.final,type:'payment',title:'收尾款：'+esc(p.name),sub:esc(p.client),cls:'ev-payment'});
-    if(p.paidDate)evs.push({date:p.paidDate,type:'payment',title:'已收款：'+esc(p.name),sub:esc(p.client),cls:'ev-payment'});
+    if(p.deposit)evs.push({date:p.deposit,type:'payment',title:'收頭款：'+esc(p.name)+(p.depositPaid?' ✓':''),sub:esc(p.client),cls:'ev-payment'});
+    if(p.final)evs.push({date:p.final,type:'payment',title:'收尾款：'+esc(p.name)+(p.finalPaid?' ✓':''),sub:esc(p.client),cls:'ev-payment'});
     if(p.proposal)evs.push({date:p.proposal,type:'proposal',title:'提案：'+esc(p.name),sub:esc(p.client),cls:'ev-proposal'});
     if(p.invoice)evs.push({date:p.invoice,type:'invoice',title:'開立發票：'+esc(p.name),sub:esc(p.client),cls:'ev-invoice'});
     if(p.revision)evs.push({date:p.revision,type:'revision',title:'調整期限：'+esc(p.name),sub:esc(p.client),cls:'ev-revision'});
@@ -843,7 +864,19 @@ function renderClients(){
   list.innerHTML=clients.map((c,i)=>{
     const count=projects.filter(p=>p.client===c.name).length;
     const total=projects.filter(p=>p.client===c.name).reduce((s,p)=>s+p.amount,0);
-    return `<div class="client-card"><div class="client-top"><div class="avatar ${AVCOLORS[i%4]}">${c.name.slice(0,2)}</div><div><div class="client-name">${esc(c.name)}</div><div class="client-type">${esc(c.type)}</div></div></div><div class="client-row"><span>案件數</span><span>${count} 件</span></div><div class="client-row"><span>累計金額</span><span>$${total.toLocaleString()}</span></div><div class="client-row"><span>聯絡</span><span style="font-size:12px;font-weight:400;">${esc(c.contact)}</span></div></div>`;
+    return `<div class="client-card">
+      <div class="client-top">
+        <div class="avatar ${AVCOLORS[i%4]}">${c.name.slice(0,2)}</div>
+        <div style="flex:1;">
+          <div class="client-name">${esc(c.name)}</div>
+          <div class="client-type">${esc(c.type)}</div>
+        </div>
+        <button onclick="openEditClient(${c.id})" style="background:none;border:0.5px solid var(--border2);border-radius:7px;padding:5px 12px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit;flex-shrink:0;">編輯</button>
+      </div>
+      <div class="client-row"><span>案件數</span><span>${count} 件</span></div>
+      <div class="client-row"><span>累計金額</span><span>$${total.toLocaleString()}</span></div>
+      <div class="client-row"><span>聯絡</span><span style="font-size:12px;font-weight:400;">${esc(c.contact)}</span></div>
+    </div>`;
   }).join('');
 }
 
@@ -856,7 +889,9 @@ function openAddProject(defaultStatus){
   document.getElementById('sps').textContent='新增';
   const sel=document.getElementById('m-pclient');
   sel.innerHTML='<option value="">（選擇客戶）</option>'+clients.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-  ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-ppaiddate','m-pnote'].forEach(id=>document.getElementById(id).value='');
+  ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-pnote'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-pdeposit-paid').checked=false;
+  document.getElementById('m-pfinal-paid').checked=false;
   document.getElementById('m-pstatus').value=defaultStatus||'詢價';
   document.getElementById('notes-log-wrap').style.display='none';
   document.getElementById('del-project-wrap').style.display='none';
@@ -880,8 +915,9 @@ function openEditProject(id){
   document.getElementById('m-prevision').value=p.revision||'';
   document.getElementById('m-pinvoice').value=p.invoice||'';
   document.getElementById('m-pdeposit').value=p.deposit||'';
+  document.getElementById('m-pdeposit-paid').checked=!!p.depositPaid;
   document.getElementById('m-pfinal').value=p.final||'';
-  document.getElementById('m-ppaiddate').value=p.paidDate||'';
+  document.getElementById('m-pfinal-paid').checked=!!p.finalPaid;
   document.getElementById('m-pnote').value='';
   const notes=p.notes||[];
   if(notes.length){document.getElementById('notes-log-wrap').style.display='block';document.getElementById('notes-log').innerHTML=notes.slice().reverse().map(n=>`<div class="note-entry"><div class="note-ts">${n.ts}</div><div class="note-text">${esc(n.text)}</div></div>`).join('');}
@@ -895,7 +931,7 @@ function saveProject(){
   if(!name)return;
   const noteText=document.getElementById('m-pnote').value.trim();
   const ts=new Date().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,final:document.getElementById('m-pfinal').value,paidDate:document.getElementById('m-ppaiddate').value};
+  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,depositPaid:document.getElementById('m-pdeposit-paid').checked,final:document.getElementById('m-pfinal').value,finalPaid:document.getElementById('m-pfinal-paid').checked};
   if(editingProjectId){
     const p=projects.find(x=>x.id===editingProjectId);
     if(p){
@@ -903,6 +939,8 @@ function saveProject(){
       if(p.name!==data.name)changes.push(`名稱：${p.name}→${data.name}`);
       if(p.status!==data.status)changes.push(`狀態：${p.status}→${data.status}`);
       if(p.amount!==data.amount)changes.push(`金額：$${p.amount.toLocaleString()}→$${data.amount.toLocaleString()}`);
+      if(p.depositPaid!==data.depositPaid)changes.push(data.depositPaid?'頭款已收':'頭款未收');
+      if(p.finalPaid!==data.finalPaid)changes.push(data.finalPaid?'尾款已收':'尾款未收');
       Object.assign(p,data);
       if(!p.notes)p.notes=[];
       if(noteText)p.notes.push({ts,text:noteText});
@@ -910,7 +948,6 @@ function saveProject(){
     }
   } else {
     projects.push({id:nextId.p++,...data,notes:noteText?[{ts,text:noteText}]:[]});
-    // auto-add client
     if(data.client&&!clients.find(c=>c.name===data.client))
       clients.push({id:nextId.c++,name:data.client,type:'',contact:''});
   }
@@ -926,15 +963,46 @@ function deleteProject(){
 // ════════════════════════════════════════════════════
 // CLIENT SHEET
 // ════════════════════════════════════════════════════
+let editingClientId=null;
 function openAddClient(){
+  editingClientId=null;
   ['m-cname','m-ctype','m-ccontact'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sct').textContent='新增客戶';
+  document.getElementById('scs').textContent='新增';
+  document.getElementById('del-client-wrap').style.display='none';
+  document.getElementById('sheet-client').classList.add('open');
+}
+function openEditClient(id){
+  editingClientId=id;
+  const c=clients.find(x=>x.id===id);if(!c)return;
+  document.getElementById('sct').textContent='編輯客戶';
+  document.getElementById('scs').textContent='儲存';
+  document.getElementById('m-cname').value=c.name;
+  document.getElementById('m-ctype').value=c.type||'';
+  document.getElementById('m-ccontact').value=c.contact||'';
+  document.getElementById('del-client-wrap').style.display='block';
   document.getElementById('sheet-client').classList.add('open');
 }
 function saveClient(){
   const name=document.getElementById('m-cname').value.trim();
   if(!name)return;
-  if(!clients.find(c=>c.name===name))
-    clients.push({id:nextId.c++,name,type:document.getElementById('m-ctype').value,contact:document.getElementById('m-ccontact').value});
+  if(editingClientId){
+    const c=clients.find(x=>x.id===editingClientId);
+    if(c){const oldName=c.name;c.name=name;c.type=document.getElementById('m-ctype').value;c.contact=document.getElementById('m-ccontact').value;
+      // update project client references if name changed
+      if(oldName!==name)projects.forEach(p=>{if(p.client===oldName)p.client=name;});
+    }
+  } else {
+    if(!clients.find(c=>c.name===name))
+      clients.push({id:nextId.c++,name,type:document.getElementById('m-ctype').value,contact:document.getElementById('m-ccontact').value});
+  }
+  closeSheet('sheet-client');persist();renderClients();
+}
+function deleteClient(){
+  if(!confirm('確定刪除此客戶？關聯案件的客戶欄位將變為空白。'))return;
+  const c=clients.find(x=>x.id===editingClientId);
+  if(c)projects.forEach(p=>{if(p.client===c.name)p.client='';});
+  clients=clients.filter(x=>x.id!==editingClientId);
   closeSheet('sheet-client');persist();renderClients();
 }
 
