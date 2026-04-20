@@ -193,7 +193,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 .sheet-title{font-size:17px;font-weight:700;margin-bottom:14px;}
 .form-field{margin-bottom:11px;}
 .form-field label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:500;}
-.form-field input,.form-field select,.form-field textarea{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;-webkit-appearance:none;}
+.form-field input:not([type=checkbox]),.form-field select,.form-field textarea{width:100%;background:var(--bg2);border:0.5px solid var(--border2);border-radius:9px;padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;-webkit-appearance:none;}
+.form-field input[type=checkbox]{-webkit-appearance:auto;appearance:auto;}
 .form-field textarea{min-height:70px;resize:vertical;line-height:1.5;}
 .form-section{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin:14px 0 8px;padding-top:12px;border-top:0.5px solid var(--border);}
 .btn-row{display:flex;gap:10px;margin-top:16px;}
@@ -394,20 +395,16 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
       <label>收頭款日</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="date" id="m-pdeposit" style="flex:1;"/>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;">
-          <input type="checkbox" id="m-pdeposit-paid" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/>
-          已收
-        </label>
+        <input type="checkbox" id="m-pdeposit-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;"/>
+        <span style="font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;" onclick="document.getElementById('m-pdeposit-paid').click()">已收</span>
       </div>
     </div>
     <div class="form-field">
       <label>收尾款日</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="date" id="m-pfinal" style="flex:1;"/>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;">
-          <input type="checkbox" id="m-pfinal-paid" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;"/>
-          已收
-        </label>
+        <input type="checkbox" id="m-pfinal-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;"/>
+        <span style="font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;" onclick="document.getElementById('m-pfinal-paid').click()">已收</span>
       </div>
     </div>
     <div class="form-section">備註</div>
