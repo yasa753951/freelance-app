@@ -299,7 +299,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
       </div>
       <div class="ftable-wrap">
         <table class="ftable">
-          <thead><tr><th>案件</th><th>客戶</th><th>金額</th><th>截止</th><th>狀態</th></tr></thead>
+          <thead><tr><th>案件</th><th>客戶</th><th>報價</th><th>已收</th><th>狀態</th></tr></thead>
           <tbody id="finance-body"></tbody>
         </table>
       </div>
@@ -382,7 +382,7 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
     <div class="form-field"><label>類型</label>
       <select id="m-ptype"><option value="brand">品牌設計</option><option value="pkg">包裝設計</option><option value="web">網頁設計</option><option value="other">其他</option></select>
     </div>
-    <div class="form-field"><label>報價 (TWD)</label><input type="number" id="m-pamount" placeholder="0"/></div>
+    <div class="form-field"><label>報價 (TWD)</label><input type="number" id="m-pamount" placeholder="0" oninput="previewPayment()"/></div>
     <div class="form-field"><label>收款狀態</label>
       <select id="m-pstatus"><option value="詢價">詢價</option><option value="進行中">進行中</option><option value="待審稿">待審稿</option><option value="已開發票">已開發票</option><option value="已收款">已收款</option></select>
     </div>
@@ -395,17 +395,36 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
       <label>收頭款日</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="date" id="m-pdeposit" style="flex:1;"/>
-        <input type="checkbox" id="m-pdeposit-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;"/>
+        <input type="checkbox" id="m-pdeposit-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;" onchange="previewPayment()"/>
         <span style="font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;" onclick="document.getElementById('m-pdeposit-paid').click()">已收</span>
+      </div>
+    </div>
+    <div class="form-field">
+      <label>頭款比例</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="number" id="m-pdeposit-pct" placeholder="例：40" min="0" max="100" style="flex:1;" oninput="previewPayment()"/>
+        <span style="font-size:14px;color:var(--text2);flex-shrink:0;">%</span>
+        <span id="m-pdeposit-amount" style="font-size:13px;color:var(--accent);white-space:nowrap;min-width:80px;text-align:right;"></span>
       </div>
     </div>
     <div class="form-field">
       <label>收尾款日</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="date" id="m-pfinal" style="flex:1;"/>
-        <input type="checkbox" id="m-pfinal-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;"/>
+        <input type="checkbox" id="m-pfinal-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;" onchange="previewPayment()"/>
         <span style="font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;" onclick="document.getElementById('m-pfinal-paid').click()">已收</span>
       </div>
+    </div>
+    <div class="form-field">
+      <label>尾款比例</label>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="number" id="m-pfinal-pct" placeholder="例：60" min="0" max="100" style="flex:1;" oninput="previewPayment()"/>
+        <span style="font-size:14px;color:var(--text2);flex-shrink:0;">%</span>
+        <span id="m-pfinal-amount" style="font-size:13px;color:var(--accent);white-space:nowrap;min-width:80px;text-align:right;"></span>
+      </div>
+    </div>
+    <div id="m-payment-preview" style="display:none;background:var(--accent-bg);border-radius:var(--radius);padding:10px 14px;margin-bottom:4px;font-size:13px;color:var(--text);">
+      <span style="color:var(--text2);">預計已收款：</span><span id="m-payment-preview-val" style="font-weight:700;color:var(--accent);"></span>
     </div>
     <div class="form-section">備註</div>
     <div class="form-field"><textarea id="m-pnote" placeholder="新增備註..."></textarea></div>
@@ -680,6 +699,48 @@ async function handleImport(e){
 }
 
 // ════════════════════════════════════════════════════
+// PAYMENT CALCULATION
+// ════════════════════════════════════════════════════
+function calcReceived(p) {
+  let received = 0;
+  const amount = p.amount || 0;
+  const depositPct = (p.depositPct !== undefined && p.depositPct !== '') ? parseFloat(p.depositPct) : 50;
+  const finalPct   = (p.finalPct   !== undefined && p.finalPct   !== '') ? parseFloat(p.finalPct)   : 50;
+
+  if (p.depositPaid) received += Math.round(amount * depositPct / 100);
+  if (p.finalPaid)   received += Math.round(amount * finalPct   / 100);
+  return received;
+}
+
+function previewPayment() {
+  const amount = parseInt(document.getElementById('m-pamount').value) || 0;
+  const rawD = document.getElementById('m-pdeposit-pct').value;
+  const rawF = document.getElementById('m-pfinal-pct').value;
+  const depositPct = rawD !== '' ? parseFloat(rawD) : 50;
+  const finalPct   = rawF !== '' ? parseFloat(rawF) : 50;
+
+  const dAmt = Math.round(amount * depositPct / 100);
+  const fAmt = Math.round(amount * finalPct   / 100);
+
+  document.getElementById('m-pdeposit-amount').textContent = `= $${dAmt.toLocaleString()}`;
+  document.getElementById('m-pfinal-amount').textContent   = `= $${fAmt.toLocaleString()}`;
+
+  const dPaid = document.getElementById('m-pdeposit-paid').checked;
+  const fPaid = document.getElementById('m-pfinal-paid').checked;
+  let preview = 0;
+  if (dPaid) preview += dAmt;
+  if (fPaid) preview += fAmt;
+
+  const previewEl = document.getElementById('m-payment-preview');
+  if (dPaid || fPaid) {
+    previewEl.style.display = 'block';
+    document.getElementById('m-payment-preview-val').textContent = '$' + preview.toLocaleString();
+  } else {
+    previewEl.style.display = 'none';
+  }
+}
+
+// ════════════════════════════════════════════════════
 // TABS
 // ════════════════════════════════════════════════════
 function switchTab(t,idx){
@@ -713,7 +774,10 @@ function renderKanban(){
       const od=isOverdue(p.due)&&status!=='已收款';
       const d=document.createElement('div');
       d.className='card'+(od?' overdue':'');
-      const payBadge=(p.deposit||p.final)?`<div style="display:flex;gap:4px;margin-top:5px;">${p.deposit?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.depositPaid?'#d4edda':'var(--bg3)'};color:${p.depositPaid?'#2d7a4f':'var(--text3)'};">頭款${p.depositPaid?'✓':''}</span>`:''}${p.final?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.finalPaid?'#d4edda':'var(--bg3)'};color:${p.finalPaid?'#2d7a4f':'var(--text3)'};">尾款${p.finalPaid?'✓':''}</span>`:''}</div>`:'';
+      const received=calcReceived(p);
+      const dPct=p.depositPct!==undefined&&p.depositPct!==''?`${p.depositPct}%`:'';
+      const fPct=p.finalPct!==undefined&&p.finalPct!==''?`${p.finalPct}%`:'';
+      const payBadge=(p.deposit||p.final)?`<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">${p.deposit?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.depositPaid?'#d4edda':'var(--bg3)'};color:${p.depositPaid?'#2d7a4f':'var(--text3)'};">頭款${dPct?' '+dPct:''}${p.depositPaid?' ✓':''}</span>`:''}${p.final?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.finalPaid?'#d4edda':'var(--bg3)'};color:${p.finalPaid?'#2d7a4f':'var(--text3)'};">尾款${fPct?' '+fPct:''}${p.finalPaid?' ✓':''}</span>`:''}</div>${received>0?`<div style="font-size:11px;color:var(--green);margin-top:3px;">已收 $${received.toLocaleString()} <span style="color:var(--text3);">/ $${p.amount.toLocaleString()}</span></div>`:''}`:'';
       d.innerHTML=`<div class="card-name">${esc(p.name)}</div><div class="card-sub">${esc(p.client)}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]||'tag-other'}">${TAG_LABEL[p.type]||'其他'}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}${payBadge}`;
       d.onclick=()=>openEditProject(p.id);
       sec.appendChild(d);
@@ -838,7 +902,7 @@ function addTodo(){
 // ════════════════════════════════════════════════════
 function renderFinance(){
   const total=projects.reduce((s,p)=>s+p.amount,0);
-  const paid=projects.filter(p=>p.status==='已收款').reduce((s,p)=>s+p.amount,0);
+  const paid=projects.reduce((s,p)=>s+calcReceived(p),0);
   const invoiced=projects.filter(p=>p.status==='已開發票').reduce((s,p)=>s+p.amount,0);
   const wip=projects.filter(p=>p.status==='進行中'||p.status==='待審稿').reduce((s,p)=>s+p.amount,0);
   document.getElementById('stat-row').innerHTML=`
@@ -848,7 +912,9 @@ function renderFinance(){
     <div class="stat-card"><div class="stat-label">進行中</div><div class="stat-val amber">$${wip.toLocaleString()}</div></div>`;
   document.getElementById('finance-body').innerHTML=projects.length?projects.map(p=>{
     const od=isOverdue(p.due)&&p.status!=='已收款';
-    return `<tr onclick="openEditProject(${p.id})"><td>${esc(p.name)}</td><td>${esc(p.client)}</td><td>$${p.amount.toLocaleString()}</td><td style="${od?'color:var(--red);font-weight:600;':''}">${p.due||'—'}</td><td><span class="pill ${PILL_MAP[p.status]||'s-quote'}">${p.status}</span></td></tr>`;
+    const received=calcReceived(p);
+    const receivedStr=received>0?`<span style="color:var(--green);font-weight:600;">$${received.toLocaleString()}</span>`:'—';
+    return `<tr onclick="openEditProject(${p.id})"><td>${esc(p.name)}</td><td>${esc(p.client)}</td><td>$${p.amount.toLocaleString()}</td><td>${receivedStr}</td><td><span class="pill ${PILL_MAP[p.status]||'s-quote'}">${p.status}</span></td></tr>`;
   }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;">還沒有案件</td></tr>';
 }
 
@@ -886,9 +952,12 @@ function openAddProject(defaultStatus){
   document.getElementById('sps').textContent='新增';
   const sel=document.getElementById('m-pclient');
   sel.innerHTML='<option value="">（選擇客戶）</option>'+clients.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
-  ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-pnote'].forEach(id=>document.getElementById(id).value='');
+  ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-pnote','m-pdeposit-pct','m-pfinal-pct'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-pdeposit-paid').checked=false;
   document.getElementById('m-pfinal-paid').checked=false;
+  document.getElementById('m-pdeposit-amount').textContent='';
+  document.getElementById('m-pfinal-amount').textContent='';
+  document.getElementById('m-payment-preview').style.display='none';
   document.getElementById('m-pstatus').value=defaultStatus||'詢價';
   document.getElementById('notes-log-wrap').style.display='none';
   document.getElementById('del-project-wrap').style.display='none';
@@ -913,8 +982,11 @@ function openEditProject(id){
   document.getElementById('m-pinvoice').value=p.invoice||'';
   document.getElementById('m-pdeposit').value=p.deposit||'';
   document.getElementById('m-pdeposit-paid').checked=!!p.depositPaid;
+  document.getElementById('m-pdeposit-pct').value=p.depositPct!==undefined?p.depositPct:'';
   document.getElementById('m-pfinal').value=p.final||'';
   document.getElementById('m-pfinal-paid').checked=!!p.finalPaid;
+  document.getElementById('m-pfinal-pct').value=p.finalPct!==undefined?p.finalPct:'';
+  previewPayment();
   document.getElementById('m-pnote').value='';
   const notes=p.notes||[];
   if(notes.length){document.getElementById('notes-log-wrap').style.display='block';document.getElementById('notes-log').innerHTML=notes.slice().reverse().map(n=>`<div class="note-entry"><div class="note-ts">${n.ts}</div><div class="note-text">${esc(n.text)}</div></div>`).join('');}
@@ -928,7 +1000,7 @@ function saveProject(){
   if(!name)return;
   const noteText=document.getElementById('m-pnote').value.trim();
   const ts=new Date().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,depositPaid:document.getElementById('m-pdeposit-paid').checked,final:document.getElementById('m-pfinal').value,finalPaid:document.getElementById('m-pfinal-paid').checked};
+  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,depositPaid:document.getElementById('m-pdeposit-paid').checked,depositPct:document.getElementById('m-pdeposit-pct').value,final:document.getElementById('m-pfinal').value,finalPaid:document.getElementById('m-pfinal-paid').checked,finalPct:document.getElementById('m-pfinal-pct').value};
   if(editingProjectId){
     const p=projects.find(x=>x.id===editingProjectId);
     if(p){
