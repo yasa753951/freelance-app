@@ -586,20 +586,23 @@ async function syncNow(){
   if(!url){setSyncState('err','未設定 API 網址');return;}
   setSyncState('loading','同步中...');
   try {
-    // push local data
+    // 先去重本地資料再 push
+    projects=dedup(projects,'id');
+    todos=dedup(todos,'id');
+    clients=dedup(clients,'id');
     const res=await fetch(url,{
       method:'POST',
       body:JSON.stringify({action:'saveAll',projects,todos,clients}),
     });
     const data=await res.json();
     if(!data.ok)throw new Error(data.error||'Sync failed');
-    // pull latest
+    // pull latest 並去重
     const res2=await fetch(url+'?action=getAll');
     const data2=await res2.json();
     if(data2.ok&&data2.data){
-      projects=data2.data.projects||projects;
-      todos=data2.data.todos||todos;
-      clients=data2.data.clients||clients;
+      projects=dedup(data2.data.projects||projects,'id');
+      todos=dedup(data2.data.todos||todos,'id');
+      clients=dedup(data2.data.clients||clients,'id');
       persist();
       refreshCurrentView();
     }
@@ -618,9 +621,10 @@ async function autoSync(){
     const res=await fetch(url+'?action=getAll');
     const data=await res.json();
     if(data.ok&&data.data){
-      projects=data.data.projects||projects;
-      todos=data.data.todos||todos;
-      clients=data.data.clients||clients;
+      // 以 Sheets 為主，但去重
+      projects=dedup(data.data.projects||projects,'id');
+      todos=dedup(data.data.todos||todos,'id');
+      clients=dedup(data.data.clients||clients,'id');
       persist();
       refreshCurrentView();
     }
@@ -629,6 +633,13 @@ async function autoSync(){
   } catch(e){
     setSyncState('err','離線模式');
   }
+}
+
+// id 去重，保留最後一筆
+function dedup(arr,key){
+  const map=new Map();
+  (arr||[]).forEach(item=>map.set(item[key],item));
+  return Array.from(map.values());
 }
 
 // ════════════════════════════════════════════════════
