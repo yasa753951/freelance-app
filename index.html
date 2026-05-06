@@ -383,8 +383,25 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
       <select id="m-ptype"><option value="brand">品牌設計</option><option value="pkg">包裝設計</option><option value="web">網頁設計</option><option value="other">其他</option></select>
     </div>
     <div class="form-field"><label>報價 (TWD)</label><input type="number" id="m-pamount" placeholder="0" oninput="previewPayment()"/></div>
-    <div class="form-field"><label>收款狀態</label>
-      <select id="m-pstatus"><option value="詢價">詢價</option><option value="進行中">進行中</option><option value="待審稿">待審稿</option><option value="已開發票">已開發票</option><option value="已收款">已收款</option></select>
+    <div class="form-field"><label>專案狀態</label>
+      <select id="m-pstatus"><option value="詢價">詢價</option><option value="進行中">進行中</option><option value="已結案">已結案</option></select>
+    </div>
+    <div class="form-field">
+      <label>收款狀態（可複選）</label>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px;">
+        <label style="display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--text);">
+          <input type="checkbox" id="pay-inv-dep" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;"/> 已開頭款發票
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--text);">
+          <input type="checkbox" id="pay-dep" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;" onchange="previewPayment()"/> 已收頭款
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--text);">
+          <input type="checkbox" id="pay-inv-fin" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;"/> 已開尾款發票
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;background:var(--bg2);border-radius:8px;padding:9px 12px;cursor:pointer;font-size:13px;color:var(--text);">
+          <input type="checkbox" id="pay-fin" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;" onchange="previewPayment()"/> 已收尾款
+        </label>
+      </div>
     </div>
     <div class="form-section">節點日期</div>
     <div class="form-field"><label>截止日期</label><input type="date" id="m-pdue"/></div>
@@ -395,8 +412,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
       <label>收頭款日</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="date" id="m-pdeposit" style="flex:1;"/>
-        <input type="checkbox" id="m-pdeposit-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;" onchange="previewPayment()"/>
-        <span style="font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;" onclick="document.getElementById('m-pdeposit-paid').click()">已收</span>
+        <input type="checkbox" id="m-pdeposit-paid" style="display:none;" onchange="previewPayment()"/>
+        <span style="display:none;" onclick="document.getElementById('m-pdeposit-paid').click()">已收</span>
       </div>
     </div>
     <div class="form-field">
@@ -411,8 +428,8 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
       <label>收尾款日</label>
       <div style="display:flex;align-items:center;gap:10px;">
         <input type="date" id="m-pfinal" style="flex:1;"/>
-        <input type="checkbox" id="m-pfinal-paid" style="width:20px;height:20px;flex-shrink:0;accent-color:var(--accent);cursor:pointer;" onchange="previewPayment()"/>
-        <span style="font-size:13px;color:var(--text2);white-space:nowrap;cursor:pointer;" onclick="document.getElementById('m-pfinal-paid').click()">已收</span>
+        <input type="checkbox" id="m-pfinal-paid" style="display:none;" onchange="previewPayment()"/>
+        <span style="display:none;" onclick="document.getElementById('m-pfinal-paid').click()">已收</span>
       </div>
     </div>
     <div class="form-field">
@@ -483,8 +500,11 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Ne
 // ════════════════════════════════════════════════════
 const TAG_MAP={brand:'tag-brand',pkg:'tag-pkg',web:'tag-web',other:'tag-other'};
 const TAG_LABEL={brand:'品牌設計',pkg:'包裝設計',web:'網頁設計',other:'其他'};
-const STATUSES=['詢價','進行中','待審稿','已開發票','已收款'];
-const PILL_MAP={'已收款':'s-paid','已開發票':'s-invoiced','進行中':'s-wip','待審稿':'s-wip','詢價':'s-quote'};
+const PROJ_STATUSES=['詢價','進行中','已結案'];
+const PAY_STATUSES=['已開頭款發票','已收頭款','已開尾款發票','已收尾款'];
+// 舊資料相容對照
+const LEGACY_STATUS_MAP={'待審稿':'進行中','已開發票':'進行中','已收款':'已結案'};
+const PROJ_PILL={'詢價':'s-quote','進行中':'s-wip','已結案':'s-paid'};
 const AVCOLORS=['av-purple','av-teal','av-amber','av-coral'];
 const MONTHS=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 const DAYS=['日','一','二','三','四','五','六'];
@@ -736,8 +756,11 @@ function previewPayment() {
   document.getElementById('m-pdeposit-amount').textContent = `= $${dAmt.toLocaleString()}`;
   document.getElementById('m-pfinal-amount').textContent   = `= $${fAmt.toLocaleString()}`;
 
-  const dPaid = document.getElementById('m-pdeposit-paid').checked;
-  const fPaid = document.getElementById('m-pfinal-paid').checked;
+  const dPaid = document.getElementById('pay-dep').checked;
+  const fPaid = document.getElementById('pay-fin').checked;
+  // sync hidden checkboxes
+  document.getElementById('m-pdeposit-paid').checked=dPaid;
+  document.getElementById('m-pfinal-paid').checked=fPaid;
   let preview = 0;
   if (dPaid) preview += dAmt;
   if (fPaid) preview += fAmt;
@@ -777,19 +800,25 @@ function openAdd(){if(currentTab==='clients')openAddClient();else openAddProject
 function renderKanban(){
   const list=document.getElementById('kanban-list');
   list.innerHTML='';
-  STATUSES.forEach(status=>{
-    const items=projects.filter(p=>p.status===status);
+  PROJ_STATUSES.forEach(status=>{
+    const items=projects.filter(p=>{
+      const s=p.projectStatus||LEGACY_STATUS_MAP[p.status]||p.status||'詢價';
+      return s===status;
+    });
     const sec=document.createElement('div');
     sec.innerHTML=`<div class="sec-head"><span class="sec-title">${status}</span><span class="sec-count">${items.length}</span></div>`;
     items.forEach(p=>{
-      const od=isOverdue(p.due)&&status!=='已收款';
+      const od=isOverdue(p.due)&&status!=='已結案';
       const d=document.createElement('div');
       d.className='card'+(od?' overdue':'');
       const received=calcReceived(p);
       const dPct=p.depositPct!==undefined&&p.depositPct!==''?`${p.depositPct}%`:'';
       const fPct=p.finalPct!==undefined&&p.finalPct!==''?`${p.finalPct}%`:'';
-      const payBadge=(p.deposit||p.final)?`<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">${p.deposit?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.depositPaid?'#d4edda':'var(--bg3)'};color:${p.depositPaid?'#2d7a4f':'var(--text3)'};">頭款${dPct?' '+dPct:''}${p.depositPaid?' ✓':''}</span>`:''}${p.final?`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${p.finalPaid?'#d4edda':'var(--bg3)'};color:${p.finalPaid?'#2d7a4f':'var(--text3)'};">尾款${fPct?' '+fPct:''}${p.finalPaid?' ✓':''}</span>`:''}</div>${received>0?`<div style="font-size:11px;color:var(--green);margin-top:3px;">已收 $${received.toLocaleString()} <span style="color:var(--text3);">/ $${p.amount.toLocaleString()}</span></div>`:''}`:'';
-      d.innerHTML=`<div class="card-name">${esc(p.name)}</div><div class="card-sub">${esc(p.client)}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]||'tag-other'}">${TAG_LABEL[p.type]||'其他'}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}${payBadge}`;
+      const payArr=p.payStatus||[];
+      const payBadges=PAY_STATUSES.filter(s=>payArr.includes(s)).map(s=>`<span style="font-size:10px;padding:1px 7px;border-radius:10px;background:${s.includes('已收')?'#d4edda':'var(--bg3)'};color:${s.includes('已收')?'#2d7a4f':'var(--text2)'};">${s}</span>`).join('');
+      const payRow=payBadges?`<div style="display:flex;gap:4px;margin-top:5px;flex-wrap:wrap;">${payBadges}</div>`:'';
+      const rcvRow=received>0?`<div style="font-size:11px;color:var(--green);margin-top:3px;">已收 $${received.toLocaleString()} <span style="color:var(--text3);">/ $${p.amount.toLocaleString()}</span></div>`:'';
+      d.innerHTML=`<div class="card-name">${esc(p.name)}</div><div class="card-sub">${esc(p.client)}</div><div class="card-row"><span class="tag ${TAG_MAP[p.type]||'tag-other'}">${TAG_LABEL[p.type]||'其他'}</span><span class="card-amount">$${p.amount.toLocaleString()}</span></div>${p.due?`<div class="card-date${od?' overdue':''}">${od?'逾期 ':'截止 '}${p.due}</div>`:''}${payRow}${rcvRow}`;
       d.onclick=()=>openEditProject(p.id);
       sec.appendChild(d);
     });
@@ -914,18 +943,20 @@ function addTodo(){
 function renderFinance(){
   const total=projects.reduce((s,p)=>s+p.amount,0);
   const paid=projects.reduce((s,p)=>s+calcReceived(p),0);
-  const invoiced=projects.filter(p=>p.status==='已開發票').reduce((s,p)=>s+p.amount,0);
-  const wip=projects.filter(p=>p.status==='進行中'||p.status==='待審稿').reduce((s,p)=>s+p.amount,0);
+  const closed=projects.filter(p=>(p.projectStatus||LEGACY_STATUS_MAP[p.status]||p.status)==='已結案').length;
+  const wip=projects.filter(p=>(p.projectStatus||LEGACY_STATUS_MAP[p.status]||p.status)==='進行中').reduce((s,p)=>s+p.amount,0);
   document.getElementById('stat-row').innerHTML=`
     <div class="stat-card"><div class="stat-label">總報價</div><div class="stat-val">$${total.toLocaleString()}</div></div>
     <div class="stat-card"><div class="stat-label">已收款</div><div class="stat-val green">$${paid.toLocaleString()}</div></div>
-    <div class="stat-card"><div class="stat-label">已開發票</div><div class="stat-val purple">$${invoiced.toLocaleString()}</div></div>
+    <div class="stat-card"><div class="stat-label">已結案</div><div class="stat-val purple">${closed} 件</div></div>
     <div class="stat-card"><div class="stat-label">進行中</div><div class="stat-val amber">$${wip.toLocaleString()}</div></div>`;
   document.getElementById('finance-body').innerHTML=projects.length?projects.map(p=>{
-    const od=isOverdue(p.due)&&p.status!=='已收款';
+    const ps=p.projectStatus||LEGACY_STATUS_MAP[p.status]||p.status||'詢價';
     const received=calcReceived(p);
     const receivedStr=received>0?`<span style="color:var(--green);font-weight:600;">$${received.toLocaleString()}</span>`:'—';
-    return `<tr onclick="openEditProject(${p.id})"><td>${esc(p.name)}</td><td>${esc(p.client)}</td><td>$${p.amount.toLocaleString()}</td><td>${receivedStr}</td><td><span class="pill ${PILL_MAP[p.status]||'s-quote'}">${p.status}</span></td></tr>`;
+    const payArr=p.payStatus||[];
+    const payStr=payArr.length?payArr.map(s=>`<span style="font-size:10px;padding:1px 6px;border-radius:8px;background:${s.includes('已收')?'#d4edda':'var(--bg3)'};color:${s.includes('已收')?'#2d7a4f':'var(--text2)'};">${s}</span>`).join(' '):'—';
+    return `<tr onclick="openEditProject(${p.id})"><td>${esc(p.name)}</td><td>${esc(p.client)}</td><td>$${p.amount.toLocaleString()}</td><td>${receivedStr}</td><td><span class="pill ${PROJ_PILL[ps]||'s-quote'}">${ps}</span><div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:3px;">${payStr}</div></td></tr>`;
   }).join(''):'<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px;">還沒有案件</td></tr>';
 }
 
@@ -964,12 +995,12 @@ function openAddProject(defaultStatus){
   const sel=document.getElementById('m-pclient');
   sel.innerHTML='<option value="">（選擇客戶）</option>'+clients.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
   ['m-pname','m-pamount','m-pdue','m-pproposal','m-prevision','m-pinvoice','m-pdeposit','m-pfinal','m-pnote','m-pdeposit-pct','m-pfinal-pct'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('m-pdeposit-paid').checked=false;
-  document.getElementById('m-pfinal-paid').checked=false;
+  ['pay-inv-dep','pay-dep','pay-inv-fin','pay-fin','m-pdeposit-paid','m-pfinal-paid'].forEach(id=>document.getElementById(id).checked=false);
   document.getElementById('m-pdeposit-amount').textContent='';
   document.getElementById('m-pfinal-amount').textContent='';
   document.getElementById('m-payment-preview').style.display='none';
-  document.getElementById('m-pstatus').value=defaultStatus||'詢價';
+  const validStatus=PROJ_STATUSES.includes(defaultStatus)?defaultStatus:'詢價';
+  document.getElementById('m-pstatus').value=validStatus;
   document.getElementById('notes-log-wrap').style.display='none';
   document.getElementById('del-project-wrap').style.display='none';
   document.getElementById('sheet-project').classList.add('open');
@@ -986,7 +1017,16 @@ function openEditProject(id){
   document.getElementById('m-pname').value=p.name;
   document.getElementById('m-ptype').value=p.type;
   document.getElementById('m-pamount').value=p.amount;
-  document.getElementById('m-pstatus').value=p.status;
+  const ps=p.projectStatus||LEGACY_STATUS_MAP[p.status]||p.status||'詢價';
+  document.getElementById('m-pstatus').value=PROJ_STATUSES.includes(ps)?ps:'詢價';
+  const payArr=p.payStatus||[];
+  document.getElementById('pay-inv-dep').checked=payArr.includes('已開頭款發票');
+  document.getElementById('pay-dep').checked=payArr.includes('已收頭款');
+  document.getElementById('pay-inv-fin').checked=payArr.includes('已開尾款發票');
+  document.getElementById('pay-fin').checked=payArr.includes('已收尾款');
+  // sync legacy hidden checkboxes for calcReceived
+  document.getElementById('m-pdeposit-paid').checked=payArr.includes('已收頭款')||!!p.depositPaid;
+  document.getElementById('m-pfinal-paid').checked=payArr.includes('已收尾款')||!!p.finalPaid;
   document.getElementById('m-pdue').value=p.due||'';
   document.getElementById('m-pproposal').value=p.proposal||'';
   document.getElementById('m-prevision').value=p.revision||'';
@@ -1011,7 +1051,14 @@ function saveProject(){
   if(!name)return;
   const noteText=document.getElementById('m-pnote').value.trim();
   const ts=new Date().toLocaleString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
-  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,depositPaid:document.getElementById('m-pdeposit-paid').checked,depositPct:document.getElementById('m-pdeposit-pct').value,final:document.getElementById('m-pfinal').value,finalPaid:document.getElementById('m-pfinal-paid').checked,finalPct:document.getElementById('m-pfinal-pct').value};
+  const payStatus=PAY_STATUSES.filter(s=>{
+    if(s==='已開頭款發票')return document.getElementById('pay-inv-dep').checked;
+    if(s==='已收頭款')return document.getElementById('pay-dep').checked;
+    if(s==='已開尾款發票')return document.getElementById('pay-inv-fin').checked;
+    if(s==='已收尾款')return document.getElementById('pay-fin').checked;
+    return false;
+  });
+  const data={name,client:document.getElementById('m-pclient').value,type:document.getElementById('m-ptype').value,amount:parseInt(document.getElementById('m-pamount').value)||0,projectStatus:document.getElementById('m-pstatus').value,payStatus,status:document.getElementById('m-pstatus').value,due:document.getElementById('m-pdue').value,proposal:document.getElementById('m-pproposal').value,revision:document.getElementById('m-prevision').value,invoice:document.getElementById('m-pinvoice').value,deposit:document.getElementById('m-pdeposit').value,depositPaid:payStatus.includes('已收頭款'),depositPct:document.getElementById('m-pdeposit-pct').value,final:document.getElementById('m-pfinal').value,finalPaid:payStatus.includes('已收尾款'),finalPct:document.getElementById('m-pfinal-pct').value};
   if(editingProjectId){
     const p=projects.find(x=>x.id===editingProjectId);
     if(p){
